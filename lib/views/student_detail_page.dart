@@ -140,68 +140,26 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
 
                   const SizedBox(height: 24),
                   const Text(
-                    'Điểm tổng kết',
+                    'Điểm các lớp học phần',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF213C73),
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Bảng điểm
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Table(
-                      border: TableBorder.all(
-                        color: Colors.grey[300]!,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      columnWidths: const {
-                        0: FlexColumnWidth(1),
-                        1: FlexColumnWidth(2),
-                        2: FlexColumnWidth(1.5),
-                        3: FlexColumnWidth(1.5),
-                        4: FlexColumnWidth(1.5),
-                        5: FlexColumnWidth(1.5),
-                        6: FlexColumnWidth(1.5),
-                      },
-                      children: [
-                        TableRow(
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF213C73),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
-                            ),
-                          ),
-                          children: [
-                            _buildTableHeader('#'),
-                            _buildTableHeader('Học kỳ'),
-                            _buildTableHeader('Điểm 4'),
-                            _buildTableHeader('Điểm 10'),
-                            _buildTableHeader('Xếp loại'),
-                            _buildTableHeader('Điểm 4 TL'),
-                            _buildTableHeader('Điểm 10 TL'),
-                          ],
-                        ),
-                        _buildGradeRow('1', 'Học kỳ 1, năm 2023 - 2024', '3.5', '8.61', '6161', '3.5', '8.61'),
-                        _buildGradeRow('2', 'Học kỳ 2, năm 2023 - 2024', '3.75', '8.88', 'xuất sắc', '3.63', '8.75'),
-                        _buildGradeRow('3', 'Học kỳ 1, năm 2024 - 2025', '3.6', '8.5', 'xuất sắc', '3.62', '8.77'),
-                        _buildGradeRow('4', 'Học kỳ 2, năm 2024 - 2025', '3.25', '8.82', '', '', ''),
-                      ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Để xem điểm thành phần, sau khi Phòng KT&ĐBCLGD chốt điểm, sinh viên phải thực hiện đánh giá lớp học phần và sẽ cần thiết của học phần.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      height: 1.4,
                     ),
                   ),
+                  const SizedBox(height: 16),
+
+                  // Điểm theo từng kỳ
+                  _buildSemesterGrades(),
                 ],
               ),
             ),
@@ -404,14 +362,190 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     );
   }
 
-  Widget _buildTableHeader(String text) {
+  Widget _buildSemesterGrades() {
+    return Column(
+      children: [
+        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 1 - 2023-2024', [
+          {'name': 'Tiếng Anh chuyên ngành 1IT ✓', 'credit': '1', 'cc': '9', 'bt': '9', 'gk': '8.5', 'ck': '9', 't10': '8.9', 'chu': 'A'},
+          {'name': 'Nhập môn ngành và kỹ năng mềm IT ✓', 'credit': '1', 'cc': '9', 'bt': '', 'gk': '', 'ck': '8.5', 't10': '8.65', 'chu': 'A'},
+          {'name': 'Cơ sở dữ liệu ✓', 'credit': '1', 'cc': '9', 'bt': '8', 'gk': '8.5', 'ck': '5.2', 't10': '6.8', 'chu': 'C'},
+          {'name': 'Tiếng Anh 1 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '10', 'ck': '7.0', 't10': '8.2', 'chu': 'B'},
+          {'name': 'Lập trình hướng đối tượng ✓', 'credit': '1', 'cc': '10', 'bt': '8', 'gk': '7.5', 'ck': '9', 't10': '8.6', 'chu': 'A'},
+          {'name': 'Lập trình cơ bản ✓', 'credit': '1', 'cc': '10', 'bt': '10', 'gk': '8.5', 'ck': '10', 't10': '9.7', 'chu': 'A'},
+          {'name': 'Giải tích 1 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '10', 'ck': '10', 't10': '10', 'chu': 'A'},
+        ]),
+        const SizedBox(height: 24),
+        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 2 - 2023-2024', [
+          {'name': 'Tiếng Anh 2 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '9.1', 'ck': '8.7', 't10': '9', 'chu': 'A'},
+          {'name': 'Khởi nghiệp và đổi mới sáng tạo ✓', 'credit': '1', 'cc': '9', 'bt': '', 'gk': '8.5', 'ck': '8', 't10': '8.3', 'chu': 'B'},
+          {'name': 'Lập trình Python ✓', 'credit': '1', 'cc': '10', 'bt': '9', 'gk': '9', 'ck': '9.5', 't10': '9.4', 'chu': 'A'},
+          {'name': 'Cấu trúc dữ liệu và giải thuật ✓', 'credit': '1', 'cc': '10', 'bt': '8.5', 'gk': '7.5', 'ck': '7', 't10': '7.7', 'chu': 'B'},
+          {'name': 'Tiếng Anh chuyên ngành 2 ✓', 'credit': '1', 'cc': '9', 'bt': '9', 'gk': '9', 'ck': '8.7', 't10': '8.9', 'chu': 'A'},
+        ]),
+        const SizedBox(height: 24),
+        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 1 - 2024-2025', [
+          {'name': 'Mạng máy tính ✓', 'credit': '1', 'cc': '10', 'bt': '9', 'gk': '9', 'ck': '7', 't10': '8.1', 'chu': 'B'},
+          {'name': 'Pháp luật đại cương ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '8.5', 'ck': '9', 't10': '9.1', 'chu': 'A'},
+          {'name': 'Giải tích 2 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '10', 'ck': '10', 't10': '10', 'chu': 'A'},
+          {'name': 'Vật lý ✓', 'credit': '1', 'cc': '10', 'bt': '8.7', 'gk': '8', 'ck': '8.5', 't10': '8.6', 'chu': 'A'},
+        ]),
+        const SizedBox(height: 24),
+        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 2 - 2024-2025', [
+          {'name': 'Toán rời rạc ✓', 'credit': '1', 'cc': '10', 'bt': '9', 'gk': '8.5', 'ck': '10', 't10': '9.5', 'chu': 'A'},
+          {'name': 'Trí tuệ nhân tạo ✓', 'credit': '1', 'cc': '10', 'bt': '7.5', 'gk': '9', 'ck': '9.5', 't10': '9.1', 'chu': 'A'},
+          {'name': 'Lập trình di động ✓', 'credit': '1', 'cc': '10', 'bt': '10', 'gk': '9.5', 'ck': '9', 't10': '9.4', 'chu': 'A'},
+          {'name': 'Tiếng Anh nâng cao 2 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '8.3', 'ck': '7.8', 't10': '8.3', 'chu': 'B'},
+        ]),
+      ],
+    );
+  }
+
+  Widget _buildSemesterSection(String title, String semester, List<Map<String, String>> courses) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header màu xanh lá
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFF81C784),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          // Semester title
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: const BoxDecoration(
+              color: Color(0xFFC8E6C9),
+            ),
+            child: Text(
+              semester,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          // Scrollable table
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 800),
+              child: Column(
+                children: [
+                  // Table header
+                  Container(
+                    color: const Color(0xFF455A64),
+                    child: Table(
+                      columnWidths: const {
+                        0: FixedColumnWidth(50),
+                        1: FixedColumnWidth(280),
+                        2: FixedColumnWidth(70),
+                        3: FixedColumnWidth(90),
+                        4: FixedColumnWidth(80),
+                        5: FixedColumnWidth(90),
+                        6: FixedColumnWidth(120),
+                        7: FixedColumnWidth(80),
+                        8: FixedColumnWidth(80),
+                      },
+                      children: [
+                        TableRow(
+                          children: [
+                            _buildGradeTableHeader('#'),
+                            _buildGradeTableHeader('Tên lớp học phần'),
+                            _buildGradeTableHeader('Lần học'),
+                            _buildGradeTableHeader('Điểm CC / GVHD'),
+                            _buildGradeTableHeader('Điểm Bài tập'),
+                            _buildGradeTableHeader('Điểm Giữa kỳ'),
+                            _buildGradeTableHeader('Điểm Cuối kỳ / Đồ án'),
+                            _buildGradeTableHeader('Điểm T10'),
+                            _buildGradeTableHeader('Điểm Chữ'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Table rows
+                  Table(
+                    columnWidths: const {
+                      0: FixedColumnWidth(50),
+                      1: FixedColumnWidth(280),
+                      2: FixedColumnWidth(70),
+                      3: FixedColumnWidth(90),
+                      4: FixedColumnWidth(80),
+                      5: FixedColumnWidth(90),
+                      6: FixedColumnWidth(120),
+                      7: FixedColumnWidth(80),
+                      8: FixedColumnWidth(80),
+                    },
+                    children: courses.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      Map<String, String> course = entry.value;
+                      Color bgColor = index % 2 == 0 ? Colors.white : Colors.grey[50]!;
+                      return TableRow(
+                        decoration: BoxDecoration(color: bgColor),
+                        children: [
+                          _buildGradeTableCell('${index + 1}'),
+                          _buildGradeTableCell(course['name']!, align: TextAlign.left),
+                          _buildGradeTableCell(course['credit']!),
+                          _buildGradeTableCell(course['cc']!),
+                          _buildGradeTableCell(course['bt']!),
+                          _buildGradeTableCell(course['gk']!),
+                          _buildGradeTableCell(course['ck']!),
+                          _buildGradeTableCell(course['t10']!),
+                          _buildGradeTableCell(
+                            course['chu']!,
+                            color: course['chu'] == 'A' ? Colors.green : (course['chu'] == 'B' ? Colors.blue : Colors.black87),
+                            bold: true,
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGradeTableHeader(String text) {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       child: Text(
         text,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
@@ -419,38 +553,16 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     );
   }
 
-  TableRow _buildGradeRow(
-    String number,
-    String semester,
-    String grade4,
-    String grade10,
-    String rating,
-    String cumGrade4,
-    String cumGrade10,
-  ) {
-    return TableRow(
-      children: [
-        _buildTableCell(number),
-        _buildTableCell(semester, align: TextAlign.left),
-        _buildTableCell(grade4, color: grade4.isNotEmpty ? const Color(0xFFE53935) : null),
-        _buildTableCell(grade10),
-        _buildTableCell(rating, color: rating.contains('xuất sắc') ? const Color(0xFFE53935) : null),
-        _buildTableCell(cumGrade4),
-        _buildTableCell(cumGrade10),
-      ],
-    );
-  }
-
-  Widget _buildTableCell(String text, {TextAlign align = TextAlign.center, Color? color}) {
+  Widget _buildGradeTableCell(String text, {TextAlign align = TextAlign.center, Color? color, bool bold = false}) {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
       child: Text(
         text,
         textAlign: align,
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 11,
           color: color ?? Colors.black87,
-          fontWeight: color != null ? FontWeight.bold : FontWeight.normal,
+          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
         ),
       ),
     );
