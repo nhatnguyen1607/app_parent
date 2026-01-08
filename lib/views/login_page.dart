@@ -21,6 +21,13 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  void _refreshCaptcha() {
+    setState(() {
+      _controller.generateCaptcha();
+      _controller.captchaController.clear();
+    });
+  }
+
   void _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -42,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         // Đăng nhập thất bại
         if (mounted) {
+          _refreshCaptcha(); // Đổi mã captcha mới khi đăng nhập thất bại
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Đăng nhập thất bại. Vui lòng thử lại.'),
@@ -50,6 +58,9 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       }
+    } else {
+      // Validate thất bại - đổi mã captcha mới
+      _refreshCaptcha();
     }
   }
 
@@ -291,14 +302,27 @@ class _LoginPageState extends State<LoginPage> {
                           color: const Color(0xFFFEB914),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
-                          '14b1F4',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 2,
-                          ),
+                        child: Row(
+                          children: [
+                            Text(
+                              _controller.captchaText,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: _refreshCaptcha,
+                              child: const Icon(
+                                Icons.refresh,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

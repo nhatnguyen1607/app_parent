@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import '../models/user_model.dart';
 
 class LoginController {
@@ -7,6 +8,22 @@ class LoginController {
   final TextEditingController captchaController = TextEditingController();
 
   bool isLoading = false;
+  String _captchaText = '';
+
+  LoginController() {
+    generateCaptcha();
+  }
+
+  String get captchaText => _captchaText;
+
+  // Sinh mã captcha ngẫu nhiên
+  void generateCaptcha() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    final random = Random();
+    _captchaText = String.fromCharCodes(
+      Iterable.generate(6, (_) => chars.codeUnitAt(random.nextInt(chars.length))),
+    );
+  }
 
   // Hàm đăng nhập - hiện tại chỉ là mock, sau này sẽ gọi API
   Future<User?> login() async {
@@ -48,6 +65,9 @@ class LoginController {
   String? validateCaptcha(String? value) {
     if (value == null || value.isEmpty) {
       return 'Vui lòng nhập mã bảo mật';
+    }
+    if (value != _captchaText) {
+      return 'Mã bảo mật không đúng';
     }
     return null;
   }
