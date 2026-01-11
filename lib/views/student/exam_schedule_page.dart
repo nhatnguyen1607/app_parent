@@ -215,7 +215,7 @@ class ExamSchedulePage extends StatelessWidget {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),

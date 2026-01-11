@@ -3,10 +3,16 @@ import '../models/user_model.dart';
 import '../models/student_model.dart';
 import 'student_detail_page.dart';
 
+import '../repositories/student_repository.dart';
+import '../repositories/repository_provider.dart';
+
 class HomePage extends StatefulWidget {
   final User user;
+  final List<Student>? initialStudents;
+  final StudentRepository repository;
 
-  const HomePage({super.key, required this.user});
+  HomePage({super.key, required this.user, this.initialStudents, StudentRepository? repository})
+      : repository = repository ?? getStudentRepository();
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -19,22 +25,19 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Mock data cho demo
-    students = [
-      Student(
-        id: '1',
-        name: 'Nguyễn Minh Nhật',
-        studentCode: '23AI037',
-        className: '23AI',
-        major: 'Trí tuệ nhân tạo',
-        faculty: 'Khoa Khoa học máy tính',
-        academicYear: 'Khóa2023',
-        dateOfBirth: '2005-07-16',
-        gpa: 3.5,
-        gpa4: 3.5,
-        gpa10: 8.61,
-      ),
-    ];
+    // Use injected students when provided, otherwise fetch from repository
+    if (widget.initialStudents != null) {
+      students = widget.initialStudents!;
+    } else {
+      students = [];
+      widget.repository.fetchStudents().then((list) {
+        if (mounted) {
+          setState(() {
+            students = list;
+          });
+        }
+      });
+    }
   }
 
   @override

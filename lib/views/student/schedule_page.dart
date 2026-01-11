@@ -200,7 +200,7 @@ class SchedulePage extends StatelessWidget {
                     ],
                   ),
                 );
-              }).toList(),
+              }),
             ],
           ),
         ),
