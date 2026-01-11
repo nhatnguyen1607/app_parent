@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
+import '../../data/dev_mock_data.dart';
 
 class CertificatePage extends StatelessWidget {
   final Student student;
@@ -8,58 +9,87 @@ class CertificatePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tableHeaderColor = const Color(0xFF415A6D);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Chứng chỉ tốt nghiệp',
+          'Chứng chỉ Tốt nghiệp',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF213C73),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(
-                Icons.verified,
-                size: 100,
-                color: Colors.grey[300],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Chứng chỉ tốt nghiệp',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
+              const Text(
+                'Chứng chỉ Tốt nghiệp',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
-              Text(
-                'Sinh viên: ${student.name}',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Mã SV: ${student.studentCode}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500],
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Chức năng đang phát triển',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      children: [
+                        DataTable(
+                          headingRowColor: WidgetStateProperty.all(
+                            tableHeaderColor,
+                          ),
+                          headingTextStyle: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          columns: const [
+                            DataColumn(label: Text('Sinh viên')),
+                            DataColumn(
+                              label: Text('Chứng chỉ Giáo dục thể chất'),
+                            ),
+                            DataColumn(
+                              label: Text('Chứng chỉ Giáo dục Quốc phòng'),
+                            ),
+                            DataColumn(label: Text('Chứng chỉ Ngoại ngữ')),
+                            DataColumn(label: Text('Chứng chỉ Tin học')),
+                          ],
+                          rows: [
+                            DataRow(
+                              cells: [
+                                DataCell(Text(devMockCertificate.studentName)),
+                                DataCell(
+                                  Text(
+                                    devMockCertificate.physicalEducation ?? '',
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    devMockCertificate.nationalDefense ?? '',
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(
+                                    devMockCertificate.foreignLanguage ?? '',
+                                  ),
+                                ),
+                                DataCell(
+                                  Text(devMockCertificate.informatics ?? ''),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ],
