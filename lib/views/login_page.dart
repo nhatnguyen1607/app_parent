@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/login_controller.dart';
 import 'home_page.dart';
+import '../repositories/repository_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -44,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
         // Đăng nhập thành công - chuyển sang HomePage
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage(user: user)),
+          MaterialPageRoute(builder: (context) => HomePage(user: user, repository: getStudentRepository())),
         );
       } else {
         // Đăng nhập thất bại
