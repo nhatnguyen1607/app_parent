@@ -111,4 +111,3 @@ final devMockCourses = <Course>[
     grade: 9.3,
   ),
 ];
-

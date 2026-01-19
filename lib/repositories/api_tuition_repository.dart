@@ -1,52 +1,31 @@
-import 'package:flutter/foundation.dart';
 import '../models/tuition_model.dart';
 import '../models/student_model.dart';
 import 'tuition_repository.dart';
-import '../data/mock/tuition_mock_data.dart' as mock;
 
+/// Real API implementation of TuitionRepository.
+/// TODO: Implement actual API calls when backend is ready.
 class ApiTuitionRepository implements TuitionRepository {
   @override
   Future<List<TuitionRecord>> fetchTuitionPaid(Student student) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    if (kDebugMode) {
-      return Future.value(mock.devMockTuitionPaid);
-    }
-
-    return <TuitionRecord>[]; // replace with API logic later
+    // TODO: Implement real API call
+    throw UnimplementedError('Real API not yet implemented');
   }
 
   @override
   Future<List<TuitionRecord>> fetchTuitionRefunds(Student student) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    if (kDebugMode) {
-      return Future.value(mock.devMockTuitionRefunds);
-    }
-
-    return <TuitionRecord>[]; // replace with API logic later
+    // TODO: Implement real API call
+    throw UnimplementedError('Real API not yet implemented');
   }
 
   @override
   Future<List<TuitionCharge>> fetchTuitionCharges(Student student) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    if (kDebugMode) {
-      return Future.value(mock.devMockTuitionCharges);
-    }
-
-    return <TuitionCharge>[]; // replace with API logic later
+    // TODO: Implement real API call
+    throw UnimplementedError('Real API not yet implemented');
   }
 
   @override
   Future<QrInfo> fetchQrInfo(Student student) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    if (kDebugMode) {
-      return Future.value(mock.devMockQrInfo);
-    }
-
-    throw UnimplementedError(); // replace with API logic later
+    // TODO: Implement real API call
+    throw UnimplementedError('Real API not yet implemented');
   }
 }
-

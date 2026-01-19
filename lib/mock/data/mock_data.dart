@@ -5,4 +5,3 @@ export 'student_mock_data.dart';
 export 'course_mock_data.dart';
 export 'tuition_mock_data.dart';
 export 'certificate_mock_data.dart';
-

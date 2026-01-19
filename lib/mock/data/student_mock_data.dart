@@ -29,4 +29,3 @@ final devMockStudents = <Student>[
     gpa10: 9.1,
   ),
 ];
-

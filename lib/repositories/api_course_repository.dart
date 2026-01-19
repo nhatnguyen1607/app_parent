@@ -1,19 +1,19 @@
-import 'package:flutter/foundation.dart';
 import '../models/course_model.dart';
 import '../models/student_model.dart';
 import 'course_repository.dart';
-import '../data/mock/course_mock_data.dart' as mock;
 
+/// Real API implementation of CourseRepository.
+/// TODO: Implement actual API calls when backend is ready.
 class ApiCourseRepository implements CourseRepository {
   @override
   Future<List<Course>> fetchCourses(Student student) async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    // TODO: Implement real API call
+    // Example:
+    // final response = await http.get(Uri.parse('$baseUrl/students/${student.id}/courses'));
+    // return (jsonDecode(response.body) as List)
+    //     .map((json) => Course.fromJson(json))
+    //     .toList();
 
-    if (kDebugMode) {
-      return Future.value(mock.devMockCourses);
-    }
-
-    return <Course>[]; // replace with API logic later
+    throw UnimplementedError('Real API not yet implemented');
   }
 }
-

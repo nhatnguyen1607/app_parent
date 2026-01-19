@@ -8,4 +8,3 @@ final devMockCertificate = Certificate(
   foreignLanguage: null,
   informatics: '---',
 );
-

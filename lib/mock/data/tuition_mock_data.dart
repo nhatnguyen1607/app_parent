@@ -117,4 +117,3 @@ final devMockQrInfo = QrInfo(
   ref: 'v10007423AI034',
   bank: 'Agribank',
 );
-
