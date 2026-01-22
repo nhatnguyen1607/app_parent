@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
 import '../../models/course_model.dart';
 import '../../repositories/course_repository.dart';
-import '../../repositories/repository_provider.dart';
+import '../../repositories/api_course_repository.dart';
 
 class CurriculumPage extends StatefulWidget {
   final Student student;
@@ -21,7 +21,7 @@ class _CurriculumPageState extends State<CurriculumPage> {
   @override
   void initState() {
     super.initState();
-    _repository = widget.repository ?? getCourseRepository();
+    _repository = widget.repository ?? ApiCourseRepository();
     _coursesFuture = _repository.fetchCourses(widget.student);
   }
 

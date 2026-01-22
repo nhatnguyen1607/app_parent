@@ -36,7 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   
   # Environment configuration
-  flutter_dotenv: ^5.1.0
+  flutter_dotenv: ^6.0.0
+  http: ^1.6.0
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:

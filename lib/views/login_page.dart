@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import '../controllers/login_controller.dart';
+import '../controllers/auth_controller.dart';
 import 'home_page.dart';
-import '../repositories/repository_provider.dart';
+import 'first_time_password_change_page.dart';
+import '../repositories/api_student_repository.dart';
+import '../models/user_model.dart';
+import '../models/student_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,7 +14,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final LoginController _controller = LoginController();
+  final AuthController _controller = AuthController();
   final _formKey = GlobalKey<FormState>();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
@@ -35,25 +38,155 @@ class _LoginPageState extends State<LoginPage> {
         _isLoading = true;
       });
 
-      final user = await _controller.login();
+      final response = await _controller.login();
 
       setState(() {
         _isLoading = false;
       });
 
-      if (user != null && mounted) {
-        // Đăng nhập thành công - chuyển sang HomePage
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage(user: user, repository: getStudentRepository())),
-        );
-      } else {
-        // Đăng nhập thất bại
-        if (mounted) {
-          _refreshCaptcha(); // Đổi mã captcha mới khi đăng nhập thất bại
+      if (response != null && mounted) {
+        // Kiểm tra nếu success = true
+        if (response['success'] == true) {
+          final data = response['data'];
+
+          // Nếu data = 1, sai số điện thoại hoặc mật khẩu
+          if (data == 1) {
+            _refreshCaptcha();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Số điện thoại hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.',
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          // Nếu data = 0, đây là lần đăng nhập đầu tiên
+          else if (data == 0) {
+            final infoList = response['info'] as List<dynamic>;
+            if (infoList.isNotEmpty) {
+              final firstInfo = infoList[0];
+
+              // Lấy 6 số cuối của password (cccd)
+              final cccd = _controller.passwordController.text;
+              final last6Digits = cccd.length >= 6
+                  ? cccd.substring(cccd.length - 6)
+                  : cccd;
+
+              // Kiểm tra khớp với cmnd_cha hoặc cmnd_me
+              String parentCCCD = '';
+              final cmndCha = firstInfo['cmnd_cha']?.toString() ?? '';
+              final cmndMe = firstInfo['cmnd_me']?.toString() ?? '';
+
+              if (cmndCha.isNotEmpty && cmndCha.endsWith(last6Digits)) {
+                parentCCCD = cmndCha;
+              } else if (cmndMe.isNotEmpty && cmndMe.endsWith(last6Digits)) {
+                parentCCCD = cmndMe;
+              }
+
+              final studentName =
+                  '${firstInfo['hodem'] ?? ''} ${firstInfo['ten'] ?? ''}'
+                      .trim();
+              final studentCode = firstInfo['masv'] ?? '';
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FirstTimePasswordChangePage(
+                    phoneNumber: _controller.phoneController.text,
+                    studentName: studentName,
+                    studentCode: studentCode,
+                    parentCCCD: parentCCCD,
+                  ),
+                ),
+              );
+            }
+          } else if (data == 3) {
+            // Đăng nhập thành công - có thông tin chi tiết
+            final infoList = response['info'] as List<dynamic>;
+            if (infoList.isNotEmpty) {
+              final firstInfo = infoList[0];
+
+              // Kiểm tra phoneNumber với sdt_cha và sdt_me để xác định tên
+              final phoneNumber = _controller.phoneController.text;
+              final sdtCha = firstInfo['sdt_cha']?.toString() ?? '';
+              final sdtMe = firstInfo['sdt_me']?.toString() ?? '';
+
+              String parentName = 'Phụ huynh';
+              String? parentEmail;
+              
+              if (phoneNumber == sdtCha && firstInfo['hotencha'] != null) {
+                parentName = firstInfo['hotencha'];
+                parentEmail = firstInfo['email_cha'];
+              } else if (phoneNumber == sdtMe && firstInfo['hotenme'] != null) {
+                parentName = firstInfo['hotenme'];
+                parentEmail = firstInfo['email_me'];
+              } else if (firstInfo['hotencha'] != null) {
+                parentName = firstInfo['hotencha'];
+                parentEmail = firstInfo['email_cha'];
+              } else if (firstInfo['hotenme'] != null) {
+                parentName = firstInfo['hotenme'];
+                parentEmail = firstInfo['email_me'];
+              }
+
+              // Tạo User từ thông tin phụ huynh
+              final user = User(
+                phoneNumber: phoneNumber,
+                name: parentName,
+                email: parentEmail,
+                fatherName: firstInfo['hotencha'],
+                motherName: firstInfo['hotenme'],
+                fatherPhone: firstInfo['sdt_cha'],
+                motherPhone: firstInfo['sdt_me'],
+              );
+
+              // Tạo danh sách Student từ info
+              final students = infoList
+                  .map((info) => Student.fromJson(info))
+                  .toList();
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HomePage(
+                    user: user,
+                    initialStudents: students,
+                    repository: ApiStudentRepository(),
+                  ),
+                ),
+              );
+            }
+          } else {
+            // Các trường hợp khác - hiển thị thông báo lỗi
+            _refreshCaptcha();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.',
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } else {
+          // Đăng nhập thất bại
+          _refreshCaptcha();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Đăng nhập thất bại. Vui lòng thử lại.'),
+              content: Text(
+                'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        // Lỗi kết nối hoặc response null
+        if (mounted) {
+          _refreshCaptcha();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Không thể kết nối đến máy chủ. Vui lòng thử lại.'),
               backgroundColor: Colors.red,
             ),
           );
@@ -143,7 +276,7 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 40),
-                  
+
                   // Ảnh minh họa
                   Container(
                     height: 250,
@@ -160,10 +293,7 @@ class _LoginPageState extends State<LoginPage> {
                   // Form đăng nhập
                   const Text(
                     'Đăng nhập',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 24),
 

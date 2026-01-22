@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
 import '../../models/tuition_model.dart';
-import '../../repositories/repository_provider.dart';
+import '../../repositories/api_tuition_repository.dart';
 
 class TuitionPaidPage extends StatefulWidget {
   final Student student;
@@ -19,7 +19,7 @@ class _TuitionPaidPageState extends State<TuitionPaidPage> {
   @override
   void initState() {
     super.initState();
-    final repo = getTuitionRepository();
+    final repo = ApiTuitionRepository();
     _paidFuture = repo.fetchTuitionPaid(widget.student);
     _refundsFuture = repo.fetchTuitionRefunds(widget.student);
   }

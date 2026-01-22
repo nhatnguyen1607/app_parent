@@ -4,45 +4,57 @@ class Student {
   final String studentCode;
   final String className;
   final String major;
-  final String faculty;
-  final String academicYear;
   final String dateOfBirth;
   final String? avatarUrl;
-  final double gpa;
-  final double gpa4;
-  final double gpa10;
-  
+  final String GVCN;
+  final String email_gv;
+  final String phone_gv;
+
   Student({
     required this.id,
     required this.name,
     required this.studentCode,
     required this.className,
     required this.major,
-    required this.faculty,
-    required this.academicYear,
     required this.dateOfBirth,
     this.avatarUrl,
-    this.gpa = 0.0,
-    this.gpa4 = 0.0,
-    this.gpa10 = 0.0,
+    required this.GVCN,
+    required this.email_gv,
+    required this.phone_gv,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
+    // Format date from yyyy-MM-dd to dd/MM/yyyy
+    String formatDate(String? dateString) {
+      if (dateString == null || dateString.isEmpty) return '';
+      try {
+        final parts = dateString.split('-');
+        if (parts.length == 3) {
+          return '${parts[2]}/${parts[1]}/${parts[0]}';
+        }
+        return dateString;
+      } catch (e) {
+        return dateString;
+      }
+    }
+
     return Student(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      studentCode: json['studentCode'] ?? '',
-      className: json['className'] ?? '',
-      major: json['major'] ?? '',
-      faculty: json['faculty'] ?? '',
-      academicYear: json['academicYear'] ?? '',
-      dateOfBirth: json['dateOfBirth'] ?? '',
-      avatarUrl: json['avatarUrl'],
-      gpa: (json['gpa'] ?? 0.0).toDouble(),
-      gpa4: (json['gpa4'] ?? 0.0).toDouble(),
-      gpa10: (json['gpa10'] ?? 0.0).toDouble(),
+      id: json['id']?.toString() ?? '',
+      name: '${json['hodem'] ?? ''} ${json['ten'] ?? ''}'.trim(),
+      studentCode: json['masv'] ?? '',
+      className: json['tenlop'] ?? '',
+      major: json['tennganh'] ?? '',
+      GVCN:
+          '${json['chucdanh'] ?? ''}${'.'}  ${json['hodemgv'] ?? ''} ${json['tengv'] ?? ''}'
+              .trim(),
+      email_gv: json['emailgv'] ?? '',
+      phone_gv: json['phonegv'] ?? '',
+      dateOfBirth: formatDate(json['ngaysinh']), 
+      avatarUrl: json['avatar'],
     );
   }
+
+  // String get GVCN => null;
 
   Map<String, dynamic> toJson() {
     return {
@@ -51,13 +63,8 @@ class Student {
       'studentCode': studentCode,
       'className': className,
       'major': major,
-      'faculty': faculty,
-      'academicYear': academicYear,
       'dateOfBirth': dateOfBirth,
       'avatarUrl': avatarUrl,
-      'gpa': gpa,
-      'gpa4': gpa4,
-      'gpa10': gpa10,
     };
   }
 }

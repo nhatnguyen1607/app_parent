@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/student_model.dart';
+import '../models/grade_model.dart';
+import '../controllers/grade_controller.dart';
 import 'student/schedule_page.dart';
 import 'student/attendance_page.dart';
 import 'student/exam_schedule_page.dart';
@@ -19,6 +21,32 @@ class StudentDetailPage extends StatefulWidget {
 }
 
 class _StudentDetailPageState extends State<StudentDetailPage> {
+  final GradeController _gradeController = GradeController();
+  List<SemesterGrades> _semesterGrades = [];
+  List<SummarySemesterGrade> _summaryGrades = [];
+  bool _isLoadingGrades = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGrades();
+  }
+
+  Future<void> _loadGrades() async {
+    setState(() {
+      _isLoadingGrades = true;
+    });
+
+    final grades = await _gradeController.getStudentGrades(widget.student.studentCode);
+    final summaryGrades = await _gradeController.getSummaryGrades(widget.student.studentCode);
+    
+    setState(() {
+      _semesterGrades = grades;
+      _summaryGrades = summaryGrades;
+      _isLoadingGrades = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,19 +86,24 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.white, width: 3),
                     ),
-                    child: widget.student.avatarUrl != null
+                    child:
+                        (widget.student.avatarUrl != null &&
+                            widget.student.avatarUrl!.isNotEmpty)
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(9),
                             child: Image.network(
                               widget.student.avatarUrl!,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.person,
+                                  size: 80,
+                                  color: Colors.grey[400],
+                                );
+                              },
                             ),
                           )
-                        : Icon(
-                            Icons.person,
-                            size: 80,
-                            color: Colors.grey[400],
-                          ),
+                        : Icon(Icons.person, size: 80, color: Colors.grey[400]),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -84,10 +117,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   const SizedBox(height: 8),
                   Text(
                     widget.student.studentCode,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                 ],
               ),
@@ -108,19 +138,37 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   _buildInfoCard([
                     _InfoItem('Mã Sinh viên:', widget.student.studentCode),
                     _InfoItem('Lớp sinh hoạt:', widget.student.className),
                     _InfoItem('Ngành/Chuyên ngành:', widget.student.major),
-                    _InfoItem('Khoa:', widget.student.faculty),
-                    _InfoItem('Khóa học:', widget.student.academicYear),
                     _InfoItem('Ngày sinh:', widget.student.dateOfBirth),
                   ]),
 
+                  // const SizedBox(height: 24),
+                  // const Text(
+                  //   'Thông tin học phí, chuyên cần, rèn luyện',
+                  //   style: TextStyle(
+                  //     fontSize: 18,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: Color(0xFF213C73),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 16),
+
+                  // _buildInfoCard([
+                  //   _InfoItem('Tiền học phí đã nộp:', '0 đ'),
+                  //   _InfoItem('Tiền học phí còn nợ:', 'Còn nợ: 7,926,400đ đ'),
+                  //   _InfoItem('Số buổi vắng:', '0'),
+                  //   _InfoItem('Chi tiết buổi vắng:', '---'),
+                  //   _InfoItem('Khen thưởng:', 'Không'),
+                  //   _InfoItem('Kỷ luật:', 'Không'),
+                  // ]),
+
                   const SizedBox(height: 24),
                   const Text(
-                    'Thông tin học phí, chuyên cần, rèn luyện',
+                    'Điểm tổng kết',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -128,15 +176,29 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
-                  _buildInfoCard([
-                    _InfoItem('Tiền học phí đã nộp:', '0 đ'),
-                    _InfoItem('Tiền học phí còn nợ:', 'Còn nợ: 7,926,400đ đ'),
-                    _InfoItem('Số buổi vắng:', '0'),
-                    _InfoItem('Chi tiết buổi vắng:', '---'),
-                    _InfoItem('Khen thưởng:', 'Không'),
-                    _InfoItem('Kỷ luật:', 'Không'),
-                  ]),
+
+                  // Bảng điểm tổng kết
+                  _isLoadingGrades
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : _summaryGrades.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(32.0),
+                                child: Text(
+                                  'Chưa có dữ liệu điểm tổng kết',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                            )
+                          : _buildSummaryTable(),
 
                   const SizedBox(height: 24),
                   const Text(
@@ -159,7 +221,27 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   const SizedBox(height: 16),
 
                   // Điểm theo từng kỳ
-                  _buildSemesterGrades(),
+                  _isLoadingGrades
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : _semesterGrades.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(32.0),
+                                child: Text(
+                                  'Chưa có dữ liệu điểm',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                            )
+                          : _buildSemesterGrades(),
                 ],
               ),
             ),
@@ -177,9 +259,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xFF1A2F5A),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFF1A2F5A)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -192,19 +272,24 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: widget.student.avatarUrl != null
+                    child:
+                        (widget.student.avatarUrl != null &&
+                            widget.student.avatarUrl!.isNotEmpty)
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(6),
                             child: Image.network(
                               widget.student.avatarUrl!,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.grey[400],
+                                );
+                              },
                             ),
                           )
-                        : Icon(
-                            Icons.person,
-                            size: 40,
-                            color: Colors.grey[400],
-                          ),
+                        : Icon(Icons.person, size: 40, color: Colors.grey[400]),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -219,10 +304,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   ),
                   Text(
                     widget.student.studentCode,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
@@ -233,7 +315,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             _buildDrawerItem(Icons.event, 'Lịch thi', 3),
             _buildDrawerItem(Icons.book, 'Chương trình học', 4),
             _buildDrawerItem(Icons.payment, 'Học phí đã nộp', 5),
-            _buildDrawerItem(Icons.account_balance_wallet, 'Học phí sắp tới', 6),
+            _buildDrawerItem(
+              Icons.account_balance_wallet,
+              'Học phí sắp tới',
+              6,
+            ),
             _buildDrawerItem(Icons.money, 'Đóng học phí', 7),
             _buildDrawerItem(Icons.verified, 'Chứng chỉ tốt nghiệp', 8),
             const Divider(color: Colors.white24),
@@ -257,13 +343,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
   Widget _buildDrawerItem(IconData icon, String title, int index) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
-      title: Text(
-        title,
-        style: const TextStyle(color: Colors.white),
-      ),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
       onTap: () {
         Navigator.pop(context);
-        
+
         // Điều hướng đến trang tương ứng
         Widget? page;
         switch (index) {
@@ -294,7 +377,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             page = CertificatePage(student: widget.student);
             break;
         }
-        
+
         if (page != null) {
           Navigator.push(
             context,
@@ -330,9 +413,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,10 +432,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.black87),
             ),
           ),
         ],
@@ -364,43 +442,21 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
 
   Widget _buildSemesterGrades() {
     return Column(
-      children: [
-        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 1 - 2023-2024', [
-          {'name': 'Tiếng Anh chuyên ngành 1IT ✓', 'credit': '1', 'cc': '9', 'bt': '9', 'gk': '8.5', 'ck': '9', 't10': '8.9', 'chu': 'A'},
-          {'name': 'Nhập môn ngành và kỹ năng mềm IT ✓', 'credit': '1', 'cc': '9', 'bt': '', 'gk': '', 'ck': '8.5', 't10': '8.65', 'chu': 'A'},
-          {'name': 'Cơ sở dữ liệu ✓', 'credit': '1', 'cc': '9', 'bt': '8', 'gk': '8.5', 'ck': '5.2', 't10': '6.8', 'chu': 'C'},
-          {'name': 'Tiếng Anh 1 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '10', 'ck': '7.0', 't10': '8.2', 'chu': 'B'},
-          {'name': 'Lập trình hướng đối tượng ✓', 'credit': '1', 'cc': '10', 'bt': '8', 'gk': '7.5', 'ck': '9', 't10': '8.6', 'chu': 'A'},
-          {'name': 'Lập trình cơ bản ✓', 'credit': '1', 'cc': '10', 'bt': '10', 'gk': '8.5', 'ck': '10', 't10': '9.7', 'chu': 'A'},
-          {'name': 'Giải tích 1 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '10', 'ck': '10', 't10': '10', 'chu': 'A'},
-        ]),
-        const SizedBox(height: 24),
-        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 2 - 2023-2024', [
-          {'name': 'Tiếng Anh 2 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '9.1', 'ck': '8.7', 't10': '9', 'chu': 'A'},
-          {'name': 'Khởi nghiệp và đổi mới sáng tạo ✓', 'credit': '1', 'cc': '9', 'bt': '', 'gk': '8.5', 'ck': '8', 't10': '8.3', 'chu': 'B'},
-          {'name': 'Lập trình Python ✓', 'credit': '1', 'cc': '10', 'bt': '9', 'gk': '9', 'ck': '9.5', 't10': '9.4', 'chu': 'A'},
-          {'name': 'Cấu trúc dữ liệu và giải thuật ✓', 'credit': '1', 'cc': '10', 'bt': '8.5', 'gk': '7.5', 'ck': '7', 't10': '7.7', 'chu': 'B'},
-          {'name': 'Tiếng Anh chuyên ngành 2 ✓', 'credit': '1', 'cc': '9', 'bt': '9', 'gk': '9', 'ck': '8.7', 't10': '8.9', 'chu': 'A'},
-        ]),
-        const SizedBox(height: 24),
-        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 1 - 2024-2025', [
-          {'name': 'Mạng máy tính ✓', 'credit': '1', 'cc': '10', 'bt': '9', 'gk': '9', 'ck': '7', 't10': '8.1', 'chu': 'B'},
-          {'name': 'Pháp luật đại cương ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '8.5', 'ck': '9', 't10': '9.1', 'chu': 'A'},
-          {'name': 'Giải tích 2 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '10', 'ck': '10', 't10': '10', 'chu': 'A'},
-          {'name': 'Vật lý ✓', 'credit': '1', 'cc': '10', 'bt': '8.7', 'gk': '8', 'ck': '8.5', 't10': '8.6', 'chu': 'A'},
-        ]),
-        const SizedBox(height: 24),
-        _buildSemesterSection('Học kỳ riêng - Quy đổi', 'Học kỳ 2 - 2024-2025', [
-          {'name': 'Toán rời rạc ✓', 'credit': '1', 'cc': '10', 'bt': '9', 'gk': '8.5', 'ck': '10', 't10': '9.5', 'chu': 'A'},
-          {'name': 'Trí tuệ nhân tạo ✓', 'credit': '1', 'cc': '10', 'bt': '7.5', 'gk': '9', 'ck': '9.5', 't10': '9.1', 'chu': 'A'},
-          {'name': 'Lập trình di động ✓', 'credit': '1', 'cc': '10', 'bt': '10', 'gk': '9.5', 'ck': '9', 't10': '9.4', 'chu': 'A'},
-          {'name': 'Tiếng Anh nâng cao 2 ✓', 'credit': '1', 'cc': '10', 'bt': '', 'gk': '8.3', 'ck': '7.8', 't10': '8.3', 'chu': 'B'},
-        ]),
-      ],
+      children: _semesterGrades.asMap().entries.map((entry) {
+        int index = entry.key;
+        SemesterGrades semesterGrade = entry.value;
+        
+        return Column(
+          children: [
+            if (index > 0) const SizedBox(height: 24),
+            _buildSemesterSection(semesterGrade),
+          ],
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildSemesterSection(String title, String semester, List<Map<String, String>> courses) {
+  Widget _buildSemesterSection(SemesterGrades semesterGrade) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -426,10 +482,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                 topRight: Radius.circular(12),
               ),
             ),
-            child: Text(
-              title,
+            child: const Text(
+              'Học kỳ riêng - Quy đổi',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -440,11 +496,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: const BoxDecoration(
-              color: Color(0xFFC8E6C9),
-            ),
+            decoration: const BoxDecoration(color: Color(0xFFC8E6C9)),
             child: Text(
-              semester,
+              semesterGrade.semesterName,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
@@ -457,7 +511,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 800),
+              constraints: const BoxConstraints(minWidth: 1000),
               child: Column(
                 children: [
                   // Table header
@@ -467,19 +521,21 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                       columnWidths: const {
                         0: FixedColumnWidth(50),
                         1: FixedColumnWidth(280),
-                        2: FixedColumnWidth(70),
-                        3: FixedColumnWidth(90),
-                        4: FixedColumnWidth(80),
-                        5: FixedColumnWidth(90),
-                        6: FixedColumnWidth(120),
-                        7: FixedColumnWidth(80),
-                        8: FixedColumnWidth(80),
+                        2: FixedColumnWidth(80),
+                        3: FixedColumnWidth(80),
+                        4: FixedColumnWidth(100),
+                        5: FixedColumnWidth(100),
+                        6: FixedColumnWidth(100),
+                        7: FixedColumnWidth(140),
+                        8: FixedColumnWidth(90),
+                        9: FixedColumnWidth(90),
                       },
                       children: [
                         TableRow(
                           children: [
                             _buildGradeTableHeader('#'),
                             _buildGradeTableHeader('Tên lớp học phần'),
+                            _buildGradeTableHeader('Số TC'),
                             _buildGradeTableHeader('Lần học'),
                             _buildGradeTableHeader('Điểm CC / GVHD'),
                             _buildGradeTableHeader('Điểm Bài tập'),
@@ -497,32 +553,56 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                     columnWidths: const {
                       0: FixedColumnWidth(50),
                       1: FixedColumnWidth(280),
-                      2: FixedColumnWidth(70),
-                      3: FixedColumnWidth(90),
-                      4: FixedColumnWidth(80),
-                      5: FixedColumnWidth(90),
-                      6: FixedColumnWidth(120),
-                      7: FixedColumnWidth(80),
-                      8: FixedColumnWidth(80),
+                      2: FixedColumnWidth(80),
+                      3: FixedColumnWidth(80),
+                      4: FixedColumnWidth(100),
+                      5: FixedColumnWidth(100),
+                      6: FixedColumnWidth(100),
+                      7: FixedColumnWidth(140),
+                      8: FixedColumnWidth(90),
+                      9: FixedColumnWidth(90),
                     },
-                    children: courses.asMap().entries.map((entry) {
+                    children: semesterGrade.grades.asMap().entries.map((entry) {
                       int index = entry.key;
-                      Map<String, String> course = entry.value;
-                      Color bgColor = index % 2 == 0 ? Colors.white : Colors.grey[50]!;
+                      Grade grade = entry.value;
+                      Color bgColor = index % 2 == 0
+                          ? Colors.white
+                          : Colors.grey[50]!;
+                      
+                      // Thêm dấu ✓ nếu có điểm
+                      String courseName = grade.tenhocphan;
+                      if (grade.diemt10 != null && grade.diemt10! > 0) {
+                        courseName += ' ✓';
+                      }
+                      
                       return TableRow(
                         decoration: BoxDecoration(color: bgColor),
                         children: [
                           _buildGradeTableCell('${index + 1}'),
-                          _buildGradeTableCell(course['name']!, align: TextAlign.left),
-                          _buildGradeTableCell(course['credit']!),
-                          _buildGradeTableCell(course['cc']!),
-                          _buildGradeTableCell(course['bt']!),
-                          _buildGradeTableCell(course['gk']!),
-                          _buildGradeTableCell(course['ck']!),
-                          _buildGradeTableCell(course['t10']!),
                           _buildGradeTableCell(
-                            course['chu']!,
-                            color: course['chu'] == 'A' ? Colors.green : (course['chu'] == 'B' ? Colors.blue : Colors.black87),
+                            courseName,
+                            align: TextAlign.left,
+                          ),
+                          _buildGradeTableCell(grade.sotc.toString()),
+                          _buildGradeTableCell(grade.lanhoc),
+                          _buildGradeTableCell(grade.diemCC),
+                          _buildGradeTableCell(grade.diemBT),
+                          _buildGradeTableCell(grade.diemGK),
+                          _buildGradeTableCell(grade.diemCK),
+                          _buildGradeTableCell(grade.diemt10?.toString() ?? ''),
+                          _buildGradeTableCell(
+                            grade.diemchu,
+                            color: grade.diemchu == 'A'
+                                ? Colors.green
+                                : (grade.diemchu == 'B'
+                                      ? Colors.blue
+                                      : (grade.diemchu == 'C'
+                                          ? Colors.orange
+                                          : (grade.diemchu == 'D'
+                                              ? Colors.red[700]!
+                                              : (grade.diemchu == 'F'
+                                                  ? Colors.red
+                                                  : Colors.black87)))),
                             bold: true,
                           ),
                         ],
@@ -534,6 +614,113 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryTable() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 860),
+          child: Column(
+            children: [
+              // Table header
+              Container(
+                color: const Color(0xFF455A64),
+                child: Table(
+                  columnWidths: const {
+                    0: FixedColumnWidth(50),
+                    1: FixedColumnWidth(180),
+                    2: FixedColumnWidth(90),
+                    3: FixedColumnWidth(90),
+                    4: FixedColumnWidth(90),
+                    5: FixedColumnWidth(120),
+                    6: FixedColumnWidth(120),
+                    7: FixedColumnWidth(120),
+                  },
+                  children: [
+                    TableRow(
+                      children: [
+                        _buildGradeTableHeader('#'),
+                        _buildGradeTableHeader('Học kỳ'),
+                        _buildGradeTableHeader('Điểm 4'),
+                        _buildGradeTableHeader('Điểm 10'),
+                        _buildGradeTableHeader('Xếp loại'),
+                        _buildGradeTableHeader('Điểm 4 TL'),
+                        _buildGradeTableHeader('Điểm 10 TL'),
+                        _buildGradeTableHeader('Số TC TL'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Table rows
+              Table(
+                columnWidths: const {
+                  0: FixedColumnWidth(50),
+                  1: FixedColumnWidth(180),
+                  2: FixedColumnWidth(90),
+                  3: FixedColumnWidth(90),
+                  4: FixedColumnWidth(90),
+                  5: FixedColumnWidth(120),
+                  6: FixedColumnWidth(120),
+                  7: FixedColumnWidth(120),
+                },
+                children: _summaryGrades.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  SummarySemesterGrade summary = entry.value;
+                  Color bgColor = index % 2 == 0
+                      ? Colors.white
+                      : Colors.grey[50]!;
+                  
+                  // Màu cho xếp loại
+                  Color xeploaiColor = Colors.black87;
+                  if (summary.xeploai == 'Xuất sắc') {
+                    xeploaiColor = Colors.green;
+                  } else if (summary.xeploai == 'Giỏi') {
+                    xeploaiColor = Colors.blue;
+                  } else if (summary.xeploai == 'Khá') {
+                    xeploaiColor = Colors.orange;
+                  }
+                  
+                  return TableRow(
+                    decoration: BoxDecoration(color: bgColor),
+                    children: [
+                      _buildGradeTableCell('${index + 1}'),
+                      _buildGradeTableCell(
+                        summary.semesterName,
+                        align: TextAlign.left,
+                      ),
+                      _buildGradeTableCell(summary.diemTB4.toString()),
+                      _buildGradeTableCell(summary.diemTB10.toString()),
+                      _buildGradeTableCell(
+                        summary.xeploai,
+                        color: xeploaiColor,
+                        bold: true,
+                      ),
+                      _buildGradeTableCell(summary.diemTL4.toString()),
+                      _buildGradeTableCell(summary.diemTL10.toString()),
+                      _buildGradeTableCell(summary.soTCTL.toString()),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -553,7 +740,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     );
   }
 
-  Widget _buildGradeTableCell(String text, {TextAlign align = TextAlign.center, Color? color, bool bold = false}) {
+  Widget _buildGradeTableCell(
+    String text, {
+    TextAlign align = TextAlign.center,
+    Color? color,
+    bool bold = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
       child: Text(

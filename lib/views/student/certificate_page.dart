@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
 import '../../models/certificate_model.dart';
-import '../../repositories/repository_provider.dart';
+import '../../repositories/api_certificate_repository.dart';
 
 class CertificatePage extends StatefulWidget {
   final Student student;
@@ -18,7 +18,7 @@ class _CertificatePageState extends State<CertificatePage> {
   @override
   void initState() {
     super.initState();
-    _certificateFuture = getCertificateRepository().fetchCertificate(
+    _certificateFuture = ApiCertificateRepository().fetchCertificate(
       widget.student,
     );
   }

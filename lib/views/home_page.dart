@@ -4,15 +4,19 @@ import '../models/student_model.dart';
 import 'student_detail_page.dart';
 
 import '../repositories/student_repository.dart';
-import '../repositories/repository_provider.dart';
+import '../repositories/api_student_repository.dart';
 
 class HomePage extends StatefulWidget {
   final User user;
   final List<Student>? initialStudents;
   final StudentRepository repository;
 
-  HomePage({super.key, required this.user, this.initialStudents, StudentRepository? repository})
-      : repository = repository ?? getStudentRepository();
+  HomePage({
+    super.key,
+    required this.user,
+    this.initialStudents,
+    StudentRepository? repository,
+  }) : repository = repository ?? ApiStudentRepository();
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -324,12 +328,20 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey[300]!),
               ),
-              child: student.avatarUrl != null
+              child:
+                  (student.avatarUrl != null && student.avatarUrl!.isNotEmpty)
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.network(
                         student.avatarUrl!,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.grey[400],
+                          );
+                        },
                       ),
                     )
                   : Icon(Icons.person, size: 50, color: Colors.grey[400]),
@@ -356,10 +368,11 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 4),
                   _buildInfoRow(Icons.school, 'Ngành:', student.major),
                   const SizedBox(height: 4),
+                  _buildInfoRow(Icons.person, 'GVCN:', student.GVCN),
                   _buildInfoRow(
-                    Icons.calendar_today,
-                    'Khóa:',
-                    student.academicYear,
+                    Icons.info,
+                    '',
+                    '${student.phone_gv}-${student.email_gv}',
                   ),
                   const SizedBox(height: 12),
 
