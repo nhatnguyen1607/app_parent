@@ -1,8 +1,6 @@
 import '../models/schedule_model.dart';
 import '../controllers/schedule_controller.dart';
 
-/// Repository layer cho Schedule - chỉ đóng vai trò data source wrapper
-/// Logic xử lý API đã được chuyển sang ScheduleController
 class ScheduleRepository {
   final ScheduleController _controller = ScheduleController();
 

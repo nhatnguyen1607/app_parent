@@ -1,8 +1,6 @@
 import '../models/grade_model.dart';
 import '../controllers/grade_controller.dart';
 
-/// Repository layer cho Grade - chỉ đóng vai trò data source wrapper
-/// Logic xử lý API đã được chuyển sang GradeController
 class GradeRepository {
   final GradeController _controller = GradeController();
 

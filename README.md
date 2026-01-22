@@ -27,7 +27,7 @@ samples, guidance on mobile development, and a full API reference.
 
 > Cách hoạt động tại runtime
 
-- Runtime hiện mặc định sử dụng `ApiStudentRepository` (nằm ở `lib/repositories/api_student_repository.dart`).
+- Runtime hiện mặc định sử dụng `ApiStudentRepository` (nằm ở `lib/repositories/student_repository.dart`).
 - Hàm tiện ích `getStudentRepository()` nằm trong `lib/repositories/repository_provider.dart` trả repository mặc định.
 
 > Khi API thật sẵn sàng

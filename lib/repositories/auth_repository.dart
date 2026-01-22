@@ -8,9 +8,6 @@ abstract class AuthRepository {
     String phoneNumber,
   );
 }
-
-/// Repository layer cho Auth - chỉ đóng vai trò data source wrapper
-/// Logic xử lý API đã được chuyển sang AuthController
 class ApiAuthRepository implements AuthRepository {
   final AuthController _controller = AuthController();
 

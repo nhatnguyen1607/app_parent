@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/auth_controller.dart';
 import 'home_page.dart';
 import 'first_time_password_change_page.dart';
-import '../repositories/api_student_repository.dart';
+import '../repositories/student_repository.dart';
 import '../models/user_model.dart';
 import '../models/student_model.dart';
 

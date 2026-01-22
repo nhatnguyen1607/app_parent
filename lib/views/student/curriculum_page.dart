@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
 import '../../models/course_model.dart';
 import '../../repositories/course_repository.dart';
-import '../../repositories/api_course_repository.dart';
+
 
 class CurriculumPage extends StatefulWidget {
   final Student student;

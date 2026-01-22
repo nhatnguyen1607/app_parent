@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
 import '../../models/certificate_model.dart';
-import '../../repositories/api_certificate_repository.dart';
+import '../../repositories/certificate_repository.dart';
 
 class CertificatePage extends StatefulWidget {
   final Student student;
