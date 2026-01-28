@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/tuition_payment_model.dart';
+import '../config/app_config.dart';
 
 class TuitionPaymentController {
   /// Lấy danh sách học phí sắp tới từ API hocphisapden
+  final String _baseUrl = AppConfig.baseUrl;
   Future<List<UpcomingTuition>> getUpcomingTuition(String masv) async {
     try {
       final url = Uri.parse(
-        'https://daotao.vku.udn.vn/phuhuynh/api/hocphisapden?masv=$masv',
+        '$_baseUrl/hocphisapden?masv=$masv',
       );
 
       final response = await http.get(url);

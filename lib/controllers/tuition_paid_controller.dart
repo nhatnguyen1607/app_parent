@@ -2,15 +2,16 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/tuition_paid_model.dart';
 import 'schedule_controller.dart';
+import '../config/app_config.dart';
 
 class TuitionPaidController {
   final ScheduleController _scheduleController = ScheduleController();
-
+  final String _baseUrl = AppConfig.baseUrl;
   /// Lấy danh sách học phí đã nộp từ API hocphidanop và gắn "học kỳ năm" từ namhochocky
   Future<List<TuitionPaidItem>> getTuitionPaid(String masv) async {
     try {
       final url = Uri.parse(
-        'https://daotao.vku.udn.vn/phuhuynh/api/hocphidanop?masv=$masv',
+        '$_baseUrl/hocphidanop?masv=$masv',
       );
 
       final response = await http.get(url);

@@ -122,7 +122,6 @@ class _HomePageState extends State<HomePage> {
         color: Colors.grey[50],
         child: Column(
           children: [
-            // Header với thiết kế đẹp hơn
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

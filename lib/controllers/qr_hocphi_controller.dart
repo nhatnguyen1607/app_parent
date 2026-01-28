@@ -1,15 +1,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import '../config/app_config.dart';
 import 'package:http/http.dart' as http;
 import '../models/qr_hocphi_model.dart';
 
 class QrHocPhiController {
+    final String _baseUrl = AppConfig.baseUrl;
   /// Gọi API qrhocphi_taomoi?masv= để lấy ảnh QR thanh toán ngân hàng.
   /// Ưu tiên dùng [img] nếu có; không được thì dùng [info] decode base64.
   Future<QrHocPhiData> getQrHocPhi(String masv) async {
     try {
       final url = Uri.parse(
-        'https://daotao.vku.udn.vn/phuhuynh/api/qrhocphi_taomoi?masv=$masv',
+        '$_baseUrl/qrhocphi_taomoi?masv=$masv',
       );
 
       final response = await http.get(url);

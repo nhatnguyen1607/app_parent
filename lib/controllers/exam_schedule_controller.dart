@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/exam_schedule_model.dart';
+import '../config/app_config.dart';
 
 class ExamScheduleController {
   // Lấy lịch thi từ API
+  final String _baseUrl = AppConfig.baseUrl;
   Future<List<ExamSchedule>> getExamSchedule(String masv) async {
     try {
       final url = Uri.parse(
-        'https://daotao.vku.udn.vn/phuhuynh/api/lichthi?masv=$masv',
+        '$_baseUrl/lichthi?masv=$masv',
       );
 
       final response = await http.get(url);
