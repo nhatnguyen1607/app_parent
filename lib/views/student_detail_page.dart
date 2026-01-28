@@ -9,6 +9,7 @@ import 'student/curriculum_page.dart';
 import 'student/tuition_paid_page.dart';
 import 'student/tuition_upcoming_page.dart';
 import 'student/tuition_payment_page.dart';
+import 'student/tuition_qr_page.dart';
 import 'student/certificate_page.dart';
 
 class StudentDetailPage extends StatefulWidget {
@@ -37,9 +38,13 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       _isLoadingGrades = true;
     });
 
-    final grades = await _gradeController.getStudentGrades(widget.student.studentCode);
-    final summaryGrades = await _gradeController.getSummaryGrades(widget.student.studentCode);
-    
+    final grades = await _gradeController.getStudentGrades(
+      widget.student.studentCode,
+    );
+    final summaryGrades = await _gradeController.getSummaryGrades(
+      widget.student.studentCode,
+    );
+
     setState(() {
       _semesterGrades = grades;
       _summaryGrades = summaryGrades;
@@ -165,7 +170,6 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   //   _InfoItem('Khen thưởng:', 'Không'),
                   //   _InfoItem('Kỷ luật:', 'Không'),
                   // ]),
-
                   const SizedBox(height: 24),
                   const Text(
                     'Điểm tổng kết',
@@ -186,19 +190,19 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                           ),
                         )
                       : _summaryGrades.isEmpty
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32.0),
-                                child: Text(
-                                  'Chưa có dữ liệu điểm tổng kết',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Text(
+                              'Chưa có dữ liệu điểm tổng kết',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
                               ),
-                            )
-                          : _buildSummaryTable(),
+                            ),
+                          ),
+                        )
+                      : _buildSummaryTable(),
 
                   const SizedBox(height: 24),
                   const Text(
@@ -229,19 +233,19 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                           ),
                         )
                       : _semesterGrades.isEmpty
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32.0),
-                                child: Text(
-                                  'Chưa có dữ liệu điểm',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Text(
+                              'Chưa có dữ liệu điểm',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
                               ),
-                            )
-                          : _buildSemesterGrades(),
+                            ),
+                          ),
+                        )
+                      : _buildSemesterGrades(),
                 ],
               ),
             ),
@@ -321,6 +325,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
               6,
             ),
             _buildDrawerItem(Icons.money, 'Đóng học phí', 7),
+            _buildDrawerItem(Icons.qr_code_2, 'Mã QR thanh toán', 9),
             _buildDrawerItem(Icons.verified, 'Chứng chỉ tốt nghiệp', 8),
             const Divider(color: Colors.white24),
             ListTile(
@@ -372,6 +377,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             break;
           case 7: // Đóng học phí
             page = TuitionPaymentPage(student: widget.student);
+            break;
+          case 9: // Mã QR thanh toán
+            page = TuitionQrPage(student: widget.student);
             break;
           case 8: // Chứng chỉ tốt nghiệp
             page = CertificatePage(student: widget.student);
@@ -445,7 +453,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       children: _semesterGrades.asMap().entries.map((entry) {
         int index = entry.key;
         SemesterGrades semesterGrade = entry.value;
-        
+
         return Column(
           children: [
             if (index > 0) const SizedBox(height: 24),
@@ -568,13 +576,13 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                       Color bgColor = index % 2 == 0
                           ? Colors.white
                           : Colors.grey[50]!;
-                      
+
                       // Thêm dấu ✓ nếu có điểm
                       String courseName = grade.tenhocphan;
                       if (grade.diemt10 != null && grade.diemt10! > 0) {
                         courseName += ' ✓';
                       }
-                      
+
                       return TableRow(
                         decoration: BoxDecoration(color: bgColor),
                         children: [
@@ -597,12 +605,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                                 : (grade.diemchu == 'B'
                                       ? Colors.blue
                                       : (grade.diemchu == 'C'
-                                          ? Colors.orange
-                                          : (grade.diemchu == 'D'
-                                              ? Colors.red[700]!
-                                              : (grade.diemchu == 'F'
-                                                  ? Colors.red
-                                                  : Colors.black87)))),
+                                            ? Colors.orange
+                                            : (grade.diemchu == 'D'
+                                                  ? Colors.red[700]!
+                                                  : (grade.diemchu == 'F'
+                                                        ? Colors.red
+                                                        : Colors.black87)))),
                             bold: true,
                           ),
                         ],
@@ -685,7 +693,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   Color bgColor = index % 2 == 0
                       ? Colors.white
                       : Colors.grey[50]!;
-                  
+
                   // Màu cho xếp loại
                   Color xeploaiColor = Colors.black87;
                   if (summary.xeploai == 'Xuất sắc') {
@@ -695,7 +703,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   } else if (summary.xeploai == 'Khá') {
                     xeploaiColor = Colors.orange;
                   }
-                  
+
                   return TableRow(
                     decoration: BoxDecoration(color: bgColor),
                     children: [
@@ -704,15 +712,25 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                         summary.semesterName,
                         align: TextAlign.left,
                       ),
-                      _buildGradeTableCell(summary.diemTB4.toString()),
-                      _buildGradeTableCell(summary.diemTB10.toString()),
+                      // Điểm trung bình hệ 4
+                      _buildGradeTableCell(summary.diemTB4.toStringAsFixed(2)),
+
+                      // Điểm trung bình hệ 10
+                      _buildGradeTableCell(summary.diemTB10.toStringAsFixed(2)),
+
                       _buildGradeTableCell(
                         summary.xeploai,
                         color: xeploaiColor,
                         bold: true,
                       ),
-                      _buildGradeTableCell(summary.diemTL4.toString()),
-                      _buildGradeTableCell(summary.diemTL10.toString()),
+
+                      // Điểm tích lũy hệ 4
+                      _buildGradeTableCell(summary.diemTL4.toStringAsFixed(2)),
+
+                      // Điểm tích lũy hệ 10
+                      _buildGradeTableCell(summary.diemTL10.toStringAsFixed(2)),
+
+                      // Số tín chỉ (thường là số nguyên hoặc .5 nên có thể giữ nguyên hoặc format tùy ý)
                       _buildGradeTableCell(summary.soTCTL.toString()),
                     ],
                   );

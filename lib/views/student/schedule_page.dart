@@ -19,7 +19,6 @@ class _SchedulePageState extends State<SchedulePage> {
   bool _isLoading = true;
   int _selectedNamhoc = 0;
   int _selectedHocky = 1;
-  String _selectedNamhocText = '';
 
   @override
   void initState() {
@@ -42,7 +41,6 @@ class _SchedulePageState extends State<SchedulePage> {
       _allSemesters = allSemesters;
       _selectedNamhoc = currentSemester['namhoc'] ?? 0;
       _selectedHocky = currentSemester['hocky'] ?? 1;
-      _selectedNamhocText = currentSemester['namhocText'] ?? '';
     });
     // Lấy thời khóa biểu
     await _loadSchedule();
@@ -127,12 +125,6 @@ class _SchedulePageState extends State<SchedulePage> {
                             if (value != null) {
                               setState(() {
                                 _selectedNamhoc = value;
-                                // Cập nhật text
-                                final yearData = _allSemesters.firstWhere(
-                                  (s) => s['id'] == value,
-                                  orElse: () => {},
-                                );
-                                _selectedNamhocText = yearData['namhocText'] ?? '';
                               });
                               _loadSchedule();
                             }

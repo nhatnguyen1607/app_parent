@@ -19,7 +19,6 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _isLoading = true;
   int _selectedNamhoc = 0;
   int _selectedHocky = 1;
-  String _selectedNamhocText = '';
 
   @override
   void initState() {
@@ -42,7 +41,6 @@ class _AttendancePageState extends State<AttendancePage> {
       _allSemesters = allSemesters;
       _selectedNamhoc = currentSemester['namhoc'] ?? 0;
       _selectedHocky = currentSemester['hocky'] ?? 1;
-      _selectedNamhocText = currentSemester['namhocText'] ?? '';
     });
     // Lấy tình trạng chuyên cần
     await _loadAttendance();
@@ -127,12 +125,6 @@ class _AttendancePageState extends State<AttendancePage> {
                             if (value != null) {
                               setState(() {
                                 _selectedNamhoc = value;
-                                // Cập nhật text
-                                final yearData = _allSemesters.firstWhere(
-                                  (s) => s['id'] == value,
-                                  orElse: () => {},
-                                );
-                                _selectedNamhocText = yearData['namhocText'] ?? '';
                               });
                               _loadAttendance();
                             }

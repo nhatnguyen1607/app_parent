@@ -1,18 +1,59 @@
 import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
+import '../../models/exam_schedule_model.dart';
+import '../../controllers/exam_schedule_controller.dart';
+import '../../controllers/schedule_controller.dart';
 
-class ExamSchedulePage extends StatelessWidget {
+class ExamSchedulePage extends StatefulWidget {
   final Student student;
 
   const ExamSchedulePage({super.key, required this.student});
 
   @override
+  State<ExamSchedulePage> createState() => _ExamSchedulePageState();
+}
+
+class _ExamSchedulePageState extends State<ExamSchedulePage> {
+  late Future<List<ExamSchedule>> _examScheduleFuture;
+  late Future<Map<String, dynamic>> _currentSemesterFuture;
+  final ExamScheduleController _controller = ExamScheduleController();
+  final ScheduleController _scheduleController = ScheduleController();
+
+  @override
+  void initState() {
+    super.initState();
+    _examScheduleFuture = _controller.getExamSchedule(widget.student.studentCode);
+    _currentSemesterFuture = _scheduleController.getCurrentSemester();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Lịch thi kết thúc học kỳ 2, năm học 2025 - 2026',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+        title: FutureBuilder<Map<String, dynamic>>(
+          future: _currentSemesterFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text(
+                'Lịch thi kết thúc học kỳ',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              );
+            }
+
+            final semester = snapshot.data ?? {};
+            final hocky = semester['hocky'] ?? 1;
+            final namhocText = semester['namhocText'] ?? '';
+
+            String title = 'Lịch thi kết thúc học kỳ $hocky';
+            if (namhocText.isNotEmpty) {
+              title += ', năm học $namhocText';
+            }
+
+            return Text(
+              title,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            );
+          },
         ),
         backgroundColor: const Color(0xFF213C73),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -74,7 +115,41 @@ class ExamSchedulePage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              _buildExamTable(),
+              FutureBuilder<List<ExamSchedule>>(
+                future: _examScheduleFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Text('Lỗi: ${snapshot.error}'),
+                      ),
+                    );
+                  }
+
+                  final exams = snapshot.data ?? [];
+                  
+                  if (exams.isEmpty) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Text('Không có dữ liệu lịch thi'),
+                      ),
+                    );
+                  }
+
+                  return _buildExamTable(exams);
+                },
+              ),
             ],
           ),
         ),
@@ -82,72 +157,7 @@ class ExamSchedulePage extends StatelessWidget {
     );
   }
 
-  Widget _buildExamTable() {
-    final exams = [
-      {
-        'subject': 'Chuyên đề 2 (IT) (5)Khai phá dữ liệu Web',
-        'teacher': 'ThS. Mai Lam',
-        'credits': '2',
-        'datetime': 'H/thức thi cuối kỳ',
-        'day': 'Ngày thi',
-        'room': 'Giờ thi',
-        'note': 'Phòng thi',
-      },
-      {
-        'subject': 'Đồ án chuyên ngành 1 (IT) (1)',
-        'teacher': 'Khoa. KH MT',
-        'credits': '1',
-        'datetime': '',
-        'day': '',
-        'room': '',
-        'note': '',
-      },
-      {
-        'subject': 'Hệ chuyên gia (1)',
-        'teacher': 'TS. Lê Tân',
-        'credits': '2',
-        'datetime': '',
-        'day': '',
-        'room': '',
-        'note': '',
-      },
-      {
-        'subject': 'Học sâu (5)',
-        'teacher': 'TS. Lê Thị Thu Nga',
-        'credits': '3',
-        'datetime': '',
-        'day': '',
-        'room': '',
-        'note': '',
-      },
-      {
-        'subject': 'Học tăng cường_2 tín chỉ (1)',
-        'teacher': 'TS. Nguyễn Hữu Nhật Minh',
-        'credits': '2',
-        'datetime': '',
-        'day': '',
-        'room': '',
-        'note': '',
-      },
-      {
-        'subject': 'Triết học Mác - Lênin (4)',
-        'teacher': 'TS. Dương Thị Phương',
-        'credits': '3',
-        'datetime': '',
-        'day': '',
-        'room': '',
-        'note': '',
-      },
-      {
-        'subject': 'Tiếng Anh nâng cao 4 (1)',
-        'teacher': 'TS. Trần Thị Thúy Liên',
-        'credits': '2',
-        'datetime': '',
-        'day': '',
-        'room': '',
-        'note': '',
-      },
-    ];
+  Widget _buildExamTable(List<ExamSchedule> exams) {
 
     return Container(
       decoration: BoxDecoration(
@@ -164,7 +174,7 @@ class ExamSchedulePage extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Container(
-          constraints: const BoxConstraints(minWidth: 1000),
+          constraints: const BoxConstraints(minWidth: 860),
           child: Column(
             children: [
               // Table header
@@ -179,9 +189,7 @@ class ExamSchedulePage extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    SizedBox(width: 280, child: _buildHeaderCell('Tên lớp học phần', flex: 1)),
-                    SizedBox(width: 200, child: _buildHeaderCell('Giảng viên', flex: 1)),
-                    SizedBox(width: 80, child: _buildHeaderCell('Số TC', flex: 1)),
+                    SizedBox(width: 350, child: _buildHeaderCell('Tên lớp học phần', flex: 1)),
                     SizedBox(width: 150, child: _buildHeaderCell('H/thức thi cuối kỳ', flex: 1)),
                     SizedBox(width: 120, child: _buildHeaderCell('Ngày thi', flex: 1)),
                     SizedBox(width: 120, child: _buildHeaderCell('Giờ thi', flex: 1)),
@@ -205,13 +213,11 @@ class ExamSchedulePage extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(width: 280, child: _buildDataCell(exam['subject']!, flex: 1)),
-                      SizedBox(width: 200, child: _buildDataCell(exam['teacher']!, flex: 1)),
-                      SizedBox(width: 80, child: _buildDataCell(exam['credits']!, flex: 1)),
-                      SizedBox(width: 150, child: _buildDataCell(exam['datetime']!, flex: 1)),
-                      SizedBox(width: 120, child: _buildDataCell(exam['day']!, flex: 1)),
-                      SizedBox(width: 120, child: _buildDataCell(exam['room']!, flex: 1)),
-                      SizedBox(width: 120, child: _buildDataCell(exam['note']!, flex: 1)),
+                      SizedBox(width: 350, child: _buildDataCell(exam.subject, flex: 1)),
+                      SizedBox(width: 150, child: _buildDataCell(exam.examType, flex: 1)),
+                      SizedBox(width: 120, child: _buildDataCell(exam.examDate, flex: 1)),
+                      SizedBox(width: 120, child: _buildDataCell(exam.examTime, flex: 1)),
+                      SizedBox(width: 120, child: _buildDataCell(exam.examRoom, flex: 1)),
                     ],
                   ),
                 );
