@@ -7,9 +7,7 @@ import 'student/attendance_page.dart';
 import 'student/exam_schedule_page.dart';
 import 'student/curriculum_page.dart';
 import 'student/tuition_paid_page.dart';
-import 'student/tuition_upcoming_page.dart';
 import 'student/tuition_payment_page.dart';
-import 'student/tuition_qr_page.dart';
 import 'student/certificate_page.dart';
 
 class StudentDetailPage extends StatefulWidget {
@@ -319,14 +317,8 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             _buildDrawerItem(Icons.event, 'Lịch thi', 3),
             _buildDrawerItem(Icons.book, 'Chương trình học', 4),
             _buildDrawerItem(Icons.payment, 'Học phí đã nộp', 5),
-            _buildDrawerItem(
-              Icons.account_balance_wallet,
-              'Học phí sắp tới',
-              6,
-            ),
-            _buildDrawerItem(Icons.money, 'Đóng học phí', 7),
-            _buildDrawerItem(Icons.qr_code_2, 'Mã QR thanh toán', 9),
-            _buildDrawerItem(Icons.verified, 'Chứng chỉ tốt nghiệp', 8),
+            _buildDrawerItem(Icons.money, 'Đóng học phí', 6),
+            _buildDrawerItem(Icons.verified, 'Chứng chỉ tốt nghiệp', 7),
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.arrow_back, color: Colors.white),
@@ -372,16 +364,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           case 5: // Học phí đã nộp
             page = TuitionPaidPage(student: widget.student);
             break;
-          case 6: // Học phí sắp tới
-            page = TuitionUpcomingPage(student: widget.student);
-            break;
-          case 7: // Đóng học phí
+          case 6: // Đóng học phí
             page = TuitionPaymentPage(student: widget.student);
             break;
-          case 9: // Mã QR thanh toán
-            page = TuitionQrPage(student: widget.student);
-            break;
-          case 8: // Chứng chỉ tốt nghiệp
+          case 77: // Chứng chỉ tốt nghiệp
             page = CertificatePage(student: widget.student);
             break;
         }

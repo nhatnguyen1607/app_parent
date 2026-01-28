@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/tuition_payment_model.dart';
 import '../config/app_config.dart';
@@ -18,7 +19,9 @@ class TuitionPaymentController {
         throw Exception('Không kết nối được server (mã ${response.statusCode})');
       }
 
-      final body = json.decode(response.body);
+      // Một số API trả về tiếng Việt dễ lỗi encoding, decode từ bodyBytes trước.
+      final decoded = utf8.decode(response.bodyBytes, allowMalformed: true);
+      final body = json.decode(decoded);
 
       // API hocphisapden trả về List trực tiếp
       if (body is List) {
@@ -27,6 +30,23 @@ class TuitionPaymentController {
                   Map<String, dynamic>.from(e as Map),
                 ))
             .toList();
+      }
+
+      // Một số trường hợp trả về Map có key info/data
+      if (body is Map) {
+        final dynamic info = body['info'] ?? body['data'];
+        if (info is List) {
+          return info
+              .map((e) => UpcomingTuition.fromJson(
+                    Map<String, dynamic>.from(e as Map),
+                  ))
+              .toList();
+        }
+        // Debug nhẹ để biết shape khi dev
+        if (kDebugMode) {
+          // ignore: avoid_print
+          print('hocphisapden unexpected shape: ${body.keys}');
+        }
       }
 
       return [];
