@@ -367,7 +367,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           case 6: // Đóng học phí
             page = TuitionPaymentPage(student: widget.student);
             break;
-          case 77: // Chứng chỉ tốt nghiệp
+          case 7: // Chứng chỉ tốt nghiệp
             page = CertificatePage(student: widget.student);
             break;
         }

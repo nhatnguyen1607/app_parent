@@ -212,11 +212,9 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 20),
-                  // Logo và tiêu đề
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Logo
                       SizedBox(
                         height: 100,
                         width: 100,
@@ -226,7 +224,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      // Chữ
                       Expanded(
                         child: SizedBox(
                           height: 100,
@@ -234,39 +231,55 @@ class _LoginPageState extends State<LoginPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                'ĐẠI HỌC ĐÀ NẴNG',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF213C73),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFBB2033),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: const Text(
+                                  'ĐẠI HỌC ĐÀ NẴNG',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF213C73),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 2),
-                              const Text(
-                                'VÀ TRUYỀN THÔNG VIỆT - HÀN',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFBB2033),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: const Text(
+                                  'TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFBB2033),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 6),
-                              const Text(
-                                'HỆ THỐNG DÀNH CHO PHỤ HUYNH VKU',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFFFEB914),
-                                  fontWeight: FontWeight.w600,
+                              const SizedBox(height: 1),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: const Text(
+                                  'VÀ TRUYỀN THÔNG VIỆT - HÀN',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFBB2033),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: const Text(
+                                  'HỆ THỐNG DÀNH CHO PHỤ HUYNH VKU',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFFFEB914),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],

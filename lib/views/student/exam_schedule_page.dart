@@ -22,13 +22,31 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
   @override
   void initState() {
     super.initState();
-    _examScheduleFuture = _controller.getExamSchedule(widget.student.studentCode);
+    
+    // Wrap với timeout để tránh treo mãi
+    _examScheduleFuture = Future.delayed(Duration.zero, () async {
+      try {
+        return await _controller
+            .getExamSchedule(widget.student.studentCode)
+            .timeout(
+              const Duration(seconds: 10),
+              onTimeout: () {
+                throw Exception('Timeout: Không kết nối được sau 10 giây');
+              },
+            );
+      } catch (e) {
+        // Ném lại để FutureBuilder bắt được
+        rethrow;
+      }
+    });
+    
     _currentSemesterFuture = _scheduleController.getCurrentSemester();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // Đổi background thành trắng thay vì xám
       appBar: AppBar(
         title: FutureBuilder<Map<String, dynamic>>(
           future: _currentSemesterFuture,
@@ -119,19 +137,84 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
                 future: _examScheduleFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(),
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(40),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: const Column(
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 16),
+                            Text('Đang tải lịch thi...'),
+                          ],
+                        ),
                       ),
                     );
                   }
 
                   if (snapshot.hasError) {
                     return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Text('Lỗi: ${snapshot.error}'),
+                      child: Container(
+                        margin: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.red[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.red[200]!),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Không thể tải lịch thi',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red[700],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            SelectableText(
+                              'Lỗi: ${snapshot.error}',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _examScheduleFuture = Future.delayed(Duration.zero, () async {
+                                    return await _controller
+                                        .getExamSchedule(widget.student.studentCode)
+                                        .timeout(
+                                          const Duration(seconds: 10),
+                                          onTimeout: () => throw Exception('Timeout'),
+                                        );
+                                  });
+                                });
+                              },
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Thử lại'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -139,10 +222,38 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
                   final exams = snapshot.data ?? [];
                   
                   if (exams.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Text('Không có dữ liệu lịch thi'),
+                    return Center(
+                      child: Container(
+                        margin: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(Icons.event_busy, size: 48, color: Colors.grey[400]),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Chưa có lịch thi',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Lịch thi sẽ được cập nhật trong thời gian tới',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -230,8 +341,8 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
   }
 
   Widget _buildHeaderCell(String text, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         text,
         textAlign: TextAlign.center,
@@ -245,8 +356,8 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
   }
 
   Widget _buildDataCell(String text, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         text,
         textAlign: TextAlign.center,

@@ -69,19 +69,25 @@ class Schedule {
     
     // Parse tiết (format: "1->3" hoặc "8->9")
     final parts = tiet.split('->');
-    if (parts.isEmpty) return '';
+    if (parts.length < 2) return '';
     
     final firstPeriod = int.tryParse(parts[0].trim()) ?? 0;
     final secondPeriod = int.tryParse(parts[1].trim()) ?? 0;
+    
+    if (firstPeriod == 0 || secondPeriod == 0) return '';
     
     // Sáng: Tiết 1-5 (07h30 - 11h30)
     // Chiều: Tiết 6-10 (13h00 - 17h00)
     if (firstPeriod >= 1 && firstPeriod <= 5) {
       final times = ['07h30', '08h30', '09h30', '10h30', '11h30'];
-      return 'Từ ${times[firstPeriod - 1]} -> ${times[secondPeriod ]}';
-    } else if (firstPeriod >= 5 && firstPeriod <= 10) {
+      if (secondPeriod <= 5 && secondPeriod >= 1) {
+        return 'Từ ${times[firstPeriod - 1]} -> ${times[secondPeriod - 1]}';
+      }
+    } else if (firstPeriod >= 6 && firstPeriod <= 10) {
       final times = ['13h', '14h', '15h', '16h', '17h'];
-      return 'Từ ${times[firstPeriod - 6]} -> ${times[secondPeriod - 5]}';
+      if (secondPeriod >= 6 && secondPeriod <= 10) {
+        return 'Từ ${times[firstPeriod - 6]} -> ${times[secondPeriod - 6]}';
+      }
     }
     
     return '';
