@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../models/student_model.dart';
 import '../../models/schedule_model.dart';
+import '../../models/absence_model.dart';
+import '../../models/makeup_model.dart';
 import '../../controllers/schedule_controller.dart';
+import '../../controllers/absence_controller.dart';
 
 class SchedulePage extends StatefulWidget {
   final Student student;
@@ -14,9 +17,14 @@ class SchedulePage extends StatefulWidget {
 
 class _SchedulePageState extends State<SchedulePage> {
   final ScheduleController _controller = ScheduleController();
+  final AbsenceController _absenceController = AbsenceController();
   List<Schedule> _schedules = [];
+  List<Absence> _absences = [];
+  List<Makeup> _makeups = [];
   List<Map<String, dynamic>> _allSemesters = [];
   bool _isLoading = true;
+  bool _isLoadingAbsences = true;
+  bool _isLoadingMakeups = true;
   int _selectedNamhoc = 0;
   int _selectedHocky = 1;
 
@@ -24,6 +32,7 @@ class _SchedulePageState extends State<SchedulePage> {
   void initState() {
     super.initState();
     _loadData();
+    _loadAbsencesAndMakeups();
   }
 
   Future<void> _loadData() async {
@@ -60,6 +69,23 @@ class _SchedulePageState extends State<SchedulePage> {
     setState(() {
       _schedules = schedules;
       _isLoading = false;
+    });
+  }
+
+  Future<void> _loadAbsencesAndMakeups() async {
+    setState(() {
+      _isLoadingAbsences = true;
+      _isLoadingMakeups = true;
+    });
+
+    final absences = await _absenceController.getAbsences(widget.student.studentCode);
+    final makeups = await _absenceController.getMakeups(widget.student.studentCode);
+
+    setState(() {
+      _absences = absences;
+      _makeups = makeups;
+      _isLoadingAbsences = false;
+      _isLoadingMakeups = false;
     });
   }
 
@@ -190,6 +216,94 @@ class _SchedulePageState extends State<SchedulePage> {
                           ),
                         )
                       : _buildScheduleTable(),
+              
+              const SizedBox(height: 24),
+              Text(
+                'Báo nghỉ',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _isLoadingAbsences
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : _absences.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Không có báo nghỉ',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildAbsencesSection(),
+
+              const SizedBox(height: 24),
+              Text(
+                'Dạy bù',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              const SizedBox(height: 12),
+              _isLoadingMakeups
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : _makeups.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Không có dạy bù',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildMakeupsSection(),
             ],
           ),
         ),
@@ -215,117 +329,411 @@ class _SchedulePageState extends State<SchedulePage> {
 
   Widget _buildScheduleTable() {
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.grey[300]!),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Container(
-          constraints: const BoxConstraints(minWidth: 1000),
+      child: Column(
+        children: _schedules.asMap().entries.map((entry) {
+          int index = entry.key;
+          Schedule schedule = entry.value;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Table header
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF455A64),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF455A64),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '#${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      schedule.tenlop,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF213C73),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Thông tin
+              _buildInfoRow('Giảng viên', schedule.teacherName),
+              const SizedBox(height: 6),
+              // _buildInfoRow('Phòng', schedule.phong),
+              // const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoRow('Phòng', schedule.phong),
+                  ),
+                  Expanded(
+                    child: _buildInfoRow('Tiết', schedule.tiet),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoRow('Thứ', schedule.thu),
+                  ),
+                  Expanded(
+                    child: _buildInfoRow('Giờ', schedule.timeSession),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildAbsencesSection() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: _absences.asMap().entries.map((entry) {
+          int index = entry.key;
+          Absence absence = entry.value;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.red[200]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
-                child: Row(
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
                   children: [
-                    SizedBox(width: 50, child: _buildHeaderCell('STT', flex: 1)),
-                    SizedBox(width: 280, child: _buildHeaderCell('Lớp học phần', flex: 1)),
-                    SizedBox(width: 200, child: _buildHeaderCell('Giảng viên', flex: 1)),
-                    SizedBox(width: 150, child: _buildHeaderCell('Tuần', flex: 1)),
-                    SizedBox(width: 120, child: _buildHeaderCell('Phòng', flex: 1)),
-                    SizedBox(width: 80, child: _buildHeaderCell('Thứ', flex: 1)),
-                    SizedBox(width: 150, child: _buildHeaderCell('Thời gian', flex: 1)),
-                    SizedBox(width: 80, child: _buildHeaderCell('Tiết', flex: 1)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red[700],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '#${index + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        absence.tenlop,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red[700],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(Icons.event_busy, color: Colors.red[700], size: 20),
                   ],
                 ),
-              ),
-              // Table rows
-              ..._schedules.asMap().entries.map((entry) {
-                int index = entry.key;
-                Schedule schedule = entry.value;
-                Color bgColor = index % 2 == 0 ? Colors.white : Colors.grey[50]!;
-                
-                // Màu cho buổi học dựa trên thời gian
-                // Color? timeColor;
-                // if (schedule.timeSession.contains('15h00')) {
-                //   timeColor = Colors.red;
-                // } else if (schedule.timeSession.contains('07h30')) {
-                //   timeColor = Colors.orange;
-                // }
-                
-                return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey[300]!),
+                const SizedBox(height: 12),
+                // Thông tin
+                Row(
+                  children: [
+                    Icon(Icons.access_time, color: Colors.grey[600], size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Thời điểm báo nghỉ',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            absence.thoidiemFormatted,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(width: 50, child: _buildDataCell('${index + 1}', flex: 1)),
-                      SizedBox(width: 280, child: _buildDataCell(schedule.tenlop, flex: 1)),
-                      SizedBox(width: 200, child: _buildDataCell(schedule.teacherName, flex: 1)),
-                      SizedBox(width: 150, child: _buildDataCell(schedule.tuan, flex: 1)),
-                      SizedBox(width: 120, child: _buildDataCell(schedule.phong, flex: 1)),
-                      SizedBox(width: 80, child: _buildDataCell(schedule.thu, flex: 1)),
-                      SizedBox(
-                        width: 150,
-                        child: _buildDataCell(
-                          schedule.timeSession,
-                          flex: 1,
-                          color: Colors.black,
+                      Icon(Icons.info_outline, color: Colors.red[700], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Lý do',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              absence.lydo,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red[800],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(width: 80, child: _buildDataCell(schedule.tiet, flex: 1)),
                     ],
                   ),
-                );
-              }),
-            ],
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildMakeupsSection() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: _makeups.asMap().entries.map((entry) {
+          int index = entry.key;
+          Makeup makeup = entry.value;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue[200]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[700],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '#${index + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        makeup.tenlop,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue[700],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Icon(Icons.event_available, color: Colors.blue[700], size: 20),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Thông tin
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMakeupInfo('Tiết', makeup.tiet),
+                    ),
+                    Expanded(
+                      child: _buildMakeupInfo('Phòng', makeup.phongText),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.blue[700], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ngày dạy bù',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              makeup.ngayFormatted,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildMakeupInfo(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
           ),
         ),
-      ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildHeaderCell(String text, {int flex = 1}) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildDataCell(String text, {int flex = 1, Color? color}) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 10,
-        color: color ?? Colors.black87,
-      ),
+  Widget _buildInfoRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
     );
   }
 }

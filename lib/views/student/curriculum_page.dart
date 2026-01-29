@@ -78,35 +78,20 @@ class _CurriculumPageState extends State<CurriculumPage> {
 
             // Table card
             Expanded(
-              child: Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: FutureBuilder<List<Course>>(
-                    future: _coursesFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Lỗi: ${snapshot.error}'));
-                      }
-                      final courses = snapshot.data ?? [];
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(minWidth: 800),
-                          child: SingleChildScrollView(
-                            child: _buildCoursesTable(courses),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+              child: FutureBuilder<List<Course>>(
+                future: _coursesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Lỗi: ${snapshot.error}'));
+                  }
+                  final courses = snapshot.data ?? [];
+                  return SingleChildScrollView(
+                    child: _buildCoursesCards(courses),
+                  );
+                },
               ),
             ),
           ],
@@ -115,43 +100,141 @@ class _CurriculumPageState extends State<CurriculumPage> {
     );
   }
 
-  Widget _buildCoursesTable(List<Course> courses) {
-    final oddColor = const Color.fromARGB(255, 253, 253, 253);
-    final evenColor = const Color(0xFFE7F1FF);
-
-    return DataTable(
-      headingRowColor: WidgetStateProperty.all(const Color(0xFF415A6D)),
-      headingTextStyle: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
+  Widget _buildCoursesCards(List<Course> courses) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Column(
+          children: courses.asMap().entries.map((entry) {
+            int index = entry.key;
+            final c = entry.value;
+          
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[300]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF455A64),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '#${index + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        c.name,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF213C73),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Thông tin hàng 1
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoRow('Mã HP', c.code),
+                    ),
+                    Expanded(
+                      child: _buildInfoRow('Tín chỉ', '${c.credits}'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                // Thông tin hàng 2
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoRow('Khối kiến thức', c.knowledgeBlock),
+                    ),
+                    Expanded(
+                      child: _buildInfoRow('Loại', c.requiredType == 'Bắt buộc' ? 'Bắt buộc' : 'Tự chọn'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                // Thông tin hàng 3
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoRow('Học kỳ', 'Học kỳ ${c.semester}'),
+                    ),
+                    Expanded(
+                      child: _buildInfoRow('Điểm', c.grade != null ? c.grade!.toString() : 'Chưa có'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+        ),
       ),
-      columns: const [
-        DataColumn(label: Text('STT')),
-        DataColumn(label: Text('Mã học phần')),
-        DataColumn(label: Text('Tên học phần')),
-        DataColumn(label: Text('Số Tín chỉ')),
-        DataColumn(label: Text('Khối kiến thức')),
-        DataColumn(label: Text('Tự chọn/Bắt buộc')),
-        DataColumn(label: Text('Học kỳ')),
-        DataColumn(label: Text('Đã học (Điểm đạt được)')),
-      ],
-      rows: List<DataRow>.generate(courses.length, (index) {
-        final c = courses[index];
-        final bg = (c.semester % 2 == 1) ? oddColor : evenColor;
-        return DataRow(
-          color: WidgetStateProperty.all(bg),
-          cells: [
-            DataCell(Text('${index + 1}')),
-            DataCell(Text(c.code)),
-            DataCell(SizedBox(width: 300, child: Text(c.name))),
-            DataCell(Text('${c.credits}')),
-            DataCell(Text(c.knowledgeBlock)),
-            DataCell(Text(c.requiredType)),
-            DataCell(Text('${c.semester}')),
-            DataCell(Text(c.grade != null ? c.grade!.toString() : '')),
-          ],
-        );
-      }),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

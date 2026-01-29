@@ -269,103 +269,114 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
   }
 
   Widget _buildExamTable(List<ExamSchedule> exams) {
-
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.grey[300]!),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Container(
-          constraints: const BoxConstraints(minWidth: 860),
-          child: Column(
-            children: [
-              // Table header
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF455A64),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(width: 350, child: _buildHeaderCell('Tên lớp học phần', flex: 1)),
-                    SizedBox(width: 150, child: _buildHeaderCell('H/thức thi cuối kỳ', flex: 1)),
-                    SizedBox(width: 120, child: _buildHeaderCell('Ngày thi', flex: 1)),
-                    SizedBox(width: 120, child: _buildHeaderCell('Giờ thi', flex: 1)),
-                    SizedBox(width: 120, child: _buildHeaderCell('Phòng thi', flex: 1)),
-                  ],
-                ),
+      child: Column(
+        children: exams.asMap().entries.map((entry) {
+          int index = entry.key;
+          var exam = entry.value;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
-              // Table rows
-              ...exams.asMap().entries.map((entry) {
-                int index = entry.key;
-                var exam = entry.value;
-                Color bgColor = index % 2 == 0 ? Colors.white : Colors.grey[50]!;
-                return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    border: Border(
-                      bottom: BorderSide(color: Colors.grey[300]!),
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(width: 350, child: _buildDataCell(exam.subject, flex: 1)),
-                      SizedBox(width: 150, child: _buildDataCell(exam.examType, flex: 1)),
-                      SizedBox(width: 120, child: _buildDataCell(exam.examDate, flex: 1)),
-                      SizedBox(width: 120, child: _buildDataCell(exam.examTime, flex: 1)),
-                      SizedBox(width: 120, child: _buildDataCell(exam.examRoom, flex: 1)),
-                    ],
-                  ),
-                );
-              }),
             ],
           ),
-        ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF455A64),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '#${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      exam.subject,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF213C73),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Thông tin
+              _buildInfoRow('Hình thức thi', exam.examType),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoRow('Ngày thi', exam.examDate),
+                  ),
+                  Expanded(
+                    child: _buildInfoRow('Giờ thi', exam.examTime),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              _buildInfoRow('Phòng thi', exam.examRoom),
+            ],
+          ),
+        );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildHeaderCell(String text, {int flex = 1}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+  Widget _buildInfoRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDataCell(String text, {int flex = 1}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 10,
-          color: Colors.black87,
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -215,94 +215,102 @@ class _AttendancePageState extends State<AttendancePage> {
 
   Widget _buildAttendanceTable() {
     return Container(
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.grey[300]!),
       ),
       child: Column(
-        children: [
-          // Table header
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-            decoration: const BoxDecoration(
-              color: Color(0xFF455A64),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
+        children: _attendances.asMap().entries.map((entry) {
+          int index = entry.key;
+          Attendance attendance = entry.value;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
               ),
-            ),
-            child: Row(
-              children: [
-                _buildHeaderCell('STT', flex: 1),
-                _buildHeaderCell('Lớp học phần', flex: 5),
-                _buildHeaderCell('Giảng viên', flex: 4),
-                _buildHeaderCell('Ngày nghỉ', flex: 2),
-              ],
-            ),
+            ],
           ),
-          // Table rows
-          ..._attendances.asMap().entries.map((entry) {
-            int index = entry.key;
-            Attendance attendance = entry.value;
-            Color bgColor = index % 2 == 0 ? Colors.white : Colors.grey[50]!;
-            
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              decoration: BoxDecoration(
-                color: bgColor,
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey[300]!),
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
                 children: [
-                  _buildDataCell('${index + 1}', flex: 1),
-                  _buildDataCell(attendance.tenlop, flex: 5),
-                  _buildDataCell(attendance.teacherName, flex: 4),
-                  _buildDataCell(attendance.formattedDate, flex: 2),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF455A64),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '#${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      attendance.tenlop,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF213C73),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
-            );
-          }),
-        ],
+              const SizedBox(height: 12),
+              // Thông tin
+              _buildInfoRow('Giảng viên', attendance.teacherName),
+              const SizedBox(height: 6),
+              _buildInfoRow('Ngày nghỉ', attendance.formattedDate),
+            ],
+          ),
+        );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildHeaderCell(String text, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+  Widget _buildInfoRow(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDataCell(String text, {int flex = 1}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 11,
-          color: Colors.black87,
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
         ),
-      ),
+      ],
     );
   }
 }

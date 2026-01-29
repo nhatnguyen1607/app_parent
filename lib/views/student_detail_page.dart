@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/student_model.dart';
 import '../models/grade_model.dart';
+import '../models/warning_model.dart';
+import '../models/suspend_model.dart';
 import '../controllers/grade_controller.dart';
+import '../controllers/warning_controller.dart';
+import '../controllers/suspend_controller.dart';
 import 'student/schedule_page.dart';
 import 'student/attendance_page.dart';
 import 'student/exam_schedule_page.dart';
@@ -21,14 +25,22 @@ class StudentDetailPage extends StatefulWidget {
 
 class _StudentDetailPageState extends State<StudentDetailPage> {
   final GradeController _gradeController = GradeController();
+  final WarningController _warningController = WarningController();
+  final SuspendController _suspendController = SuspendController();
   List<SemesterGrades> _semesterGrades = [];
   List<SummarySemesterGrade> _summaryGrades = [];
+  List<Warning> _warnings = [];
+  List<Suspend> _suspends = [];
   bool _isLoadingGrades = true;
+  bool _isLoadingWarnings = true;
+  bool _isLoadingSuspends = true;
 
   @override
   void initState() {
     super.initState();
     _loadGrades();
+    _loadWarnings();
+    _loadSuspends();
   }
 
   Future<void> _loadGrades() async {
@@ -47,6 +59,36 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       _semesterGrades = grades;
       _summaryGrades = summaryGrades;
       _isLoadingGrades = false;
+    });
+  }
+
+  Future<void> _loadWarnings() async {
+    setState(() {
+      _isLoadingWarnings = true;
+    });
+
+    final warnings = await _warningController.getWarnings(
+      widget.student.studentCode,
+    );
+
+    setState(() {
+      _warnings = warnings;
+      _isLoadingWarnings = false;
+    });
+  }
+
+  Future<void> _loadSuspends() async {
+    setState(() {
+      _isLoadingSuspends = true;
+    });
+
+    final suspends = await _suspendController.getSuspends(
+      widget.student.studentCode,
+    );
+
+    setState(() {
+      _suspends = suspends;
+      _isLoadingSuspends = false;
     });
   }
 
@@ -149,25 +191,96 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                     _InfoItem('Ngày sinh:', widget.student.dateOfBirth),
                   ]),
 
-                  // const SizedBox(height: 24),
-                  // const Text(
-                  //   'Thông tin học phí, chuyên cần, rèn luyện',
-                  //   style: TextStyle(
-                  //     fontSize: 18,
-                  //     fontWeight: FontWeight.bold,
-                  //     color: Color(0xFF213C73),
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 16),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'CẢNH BÁO KẾT QUẢ HỌC TẬP',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF213C73),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
-                  // _buildInfoCard([
-                  //   _InfoItem('Tiền học phí đã nộp:', '0 đ'),
-                  //   _InfoItem('Tiền học phí còn nợ:', 'Còn nợ: 7,926,400đ đ'),
-                  //   _InfoItem('Số buổi vắng:', '0'),
-                  //   _InfoItem('Chi tiết buổi vắng:', '---'),
-                  //   _InfoItem('Khen thưởng:', 'Không'),
-                  //   _InfoItem('Kỷ luật:', 'Không'),
-                  // ]),
+                  _isLoadingWarnings
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : _warnings.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Không có cảnh báo học tập',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildWarningsSection(),
+
+                  const SizedBox(height: 24),
+                  const Text(
+                    'TẠM DỪNG HỌC TẬP',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF213C73),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  _isLoadingSuspends
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : _suspends.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Không có tạm dừng học tập',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildSuspendsSection(),
+
                   const SizedBox(height: 24),
                   const Text(
                     'Điểm tổng kết',
@@ -501,110 +614,169 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
               ),
             ),
           ),
-          // Scrollable table
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Container(
-              constraints: const BoxConstraints(minWidth: 1000),
-              child: Column(
-                children: [
-                  // Table header
-                  Container(
-                    color: const Color(0xFF455A64),
-                    child: Table(
-                      columnWidths: const {
-                        0: FixedColumnWidth(50),
-                        1: FixedColumnWidth(280),
-                        2: FixedColumnWidth(80),
-                        3: FixedColumnWidth(80),
-                        4: FixedColumnWidth(100),
-                        5: FixedColumnWidth(100),
-                        6: FixedColumnWidth(100),
-                        7: FixedColumnWidth(140),
-                        8: FixedColumnWidth(90),
-                        9: FixedColumnWidth(90),
-                      },
-                      children: [
-                        TableRow(
-                          children: [
-                            _buildGradeTableHeader('#'),
-                            _buildGradeTableHeader('Tên lớp học phần'),
-                            _buildGradeTableHeader('Số TC'),
-                            _buildGradeTableHeader('Lần học'),
-                            _buildGradeTableHeader('Điểm CC / GVHD'),
-                            _buildGradeTableHeader('Điểm Bài tập'),
-                            _buildGradeTableHeader('Điểm Giữa kỳ'),
-                            _buildGradeTableHeader('Điểm Cuối kỳ / Đồ án'),
-                            _buildGradeTableHeader('Điểm T10'),
-                            _buildGradeTableHeader('Điểm Chữ'),
-                          ],
-                        ),
-                      ],
-                    ),
+          // Grade cards
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: semesterGrade.grades.asMap().entries.map((entry) {
+                int index = entry.key;
+                Grade grade = entry.value;
+
+                // Màu cho điểm chữ
+                Color gradeColor = Colors.black87;
+                if (grade.diemchu == 'A') {
+                  gradeColor = Colors.green;
+                } else if (grade.diemchu == 'B') {
+                  gradeColor = Colors.blue;
+                } else if (grade.diemchu == 'C') {
+                  gradeColor = Colors.orange;
+                } else if (grade.diemchu == 'D') {
+                  gradeColor = Colors.red[700]!;
+                } else if (grade.diemchu == 'F') {
+                  gradeColor = Colors.red;
+                }
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  // Table rows
-                  Table(
-                    columnWidths: const {
-                      0: FixedColumnWidth(50),
-                      1: FixedColumnWidth(280),
-                      2: FixedColumnWidth(80),
-                      3: FixedColumnWidth(80),
-                      4: FixedColumnWidth(100),
-                      5: FixedColumnWidth(100),
-                      6: FixedColumnWidth(100),
-                      7: FixedColumnWidth(140),
-                      8: FixedColumnWidth(90),
-                      9: FixedColumnWidth(90),
-                    },
-                    children: semesterGrade.grades.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      Grade grade = entry.value;
-                      Color bgColor = index % 2 == 0
-                          ? Colors.white
-                          : Colors.grey[50]!;
-
-                      // Thêm dấu ✓ nếu có điểm
-                      String courseName = grade.tenhocphan;
-                      if (grade.diemt10 != null && grade.diemt10! > 0) {
-                        courseName += ' ✓';
-                      }
-
-                      return TableRow(
-                        decoration: BoxDecoration(color: bgColor),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Tên môn học
+                      Row(
                         children: [
-                          _buildGradeTableCell('${index + 1}'),
-                          _buildGradeTableCell(
-                            courseName,
-                            align: TextAlign.left,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF455A64),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '#${index + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          _buildGradeTableCell(grade.sotc.toString()),
-                          _buildGradeTableCell(grade.lanhoc),
-                          _buildGradeTableCell(grade.diemCC),
-                          _buildGradeTableCell(grade.diemBT),
-                          _buildGradeTableCell(grade.diemGK),
-                          _buildGradeTableCell(grade.diemCK),
-                          _buildGradeTableCell(grade.diemt10?.toString() ?? ''),
-                          _buildGradeTableCell(
-                            grade.diemchu,
-                            color: grade.diemchu == 'A'
-                                ? Colors.green
-                                : (grade.diemchu == 'B'
-                                      ? Colors.blue
-                                      : (grade.diemchu == 'C'
-                                            ? Colors.orange
-                                            : (grade.diemchu == 'D'
-                                                  ? Colors.red[700]!
-                                                  : (grade.diemchu == 'F'
-                                                        ? Colors.red
-                                                        : Colors.black87)))),
-                            bold: true,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              grade.tenhocphan,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF213C73),
+                              ),
+                            ),
+                          ),
+                          if (grade.diemt10 != null && grade.diemt10! > 0)
+                            const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      // Thông tin điểm
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradeInfo('Tín chỉ', grade.sotc.toString()),
+                          ),
+                          Expanded(
+                            child: _buildGradeInfo('Lần học', grade.lanhoc),
                           ),
                         ],
-                      );
-                    }).toList(),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradeInfo('Điểm CC', grade.diemCC),
+                          ),
+                          Expanded(
+                            child: _buildGradeInfo('Điểm BT', grade.diemBT),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradeInfo('Điểm GK', grade.diemGK),
+                          ),
+                          Expanded(
+                            child: _buildGradeInfo('Điểm CK', grade.diemCK),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 20),
+                      // Điểm tổng kết
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Column(
+                            children: [
+                              Text(
+                                'Điểm T10',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                grade.diemt10?.toString() ?? '',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF213C73),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            height: 40,
+                            width: 1,
+                            color: Colors.grey[300],
+                          ),
+                          Column(
+                            children: [
+                              Text(
+                                'Điểm chữ',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                grade.diemchu,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: gradeColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              }).toList(),
             ),
           ),
         ],
@@ -613,133 +785,608 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
   }
 
   Widget _buildSummaryTable() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return Column(
+      children: _summaryGrades.asMap().entries.map((entry) {
+        int index = entry.key;
+        SummarySemesterGrade summary = entry.value;
+
+        // Màu cho xếp loại
+        Color xeploaiColor = Colors.black87;
+        if (summary.xeploai == 'Xuất sắc') {
+          xeploaiColor = Colors.green;
+        } else if (summary.xeploai == 'Giỏi') {
+          xeploaiColor = Colors.blue;
+        } else if (summary.xeploai == 'Khá') {
+          xeploaiColor = Colors.orange;
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[300]!),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Container(
-          constraints: const BoxConstraints(minWidth: 860),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Table header
+              // Header học kỳ
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF455A64),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '#${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      summary.semesterName,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF213C73),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Điểm trung bình
               Container(
-                color: const Color(0xFF455A64),
-                child: Table(
-                  columnWidths: const {
-                    0: FixedColumnWidth(50),
-                    1: FixedColumnWidth(180),
-                    2: FixedColumnWidth(90),
-                    3: FixedColumnWidth(90),
-                    4: FixedColumnWidth(90),
-                    5: FixedColumnWidth(120),
-                    6: FixedColumnWidth(120),
-                    7: FixedColumnWidth(120),
-                  },
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TableRow(
+                    Text(
+                      'Điểm trung bình học kỳ',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildGradeTableHeader('#'),
-                        _buildGradeTableHeader('Học kỳ'),
-                        _buildGradeTableHeader('Điểm 4'),
-                        _buildGradeTableHeader('Điểm 10'),
-                        _buildGradeTableHeader('Xếp loại'),
-                        _buildGradeTableHeader('Điểm 4 TL'),
-                        _buildGradeTableHeader('Điểm 10 TL'),
-                        _buildGradeTableHeader('Số TC TL'),
+                        _buildScoreBox('Hệ 4', summary.diemTB4.toStringAsFixed(2)),
+                        _buildScoreBox('Hệ 10', summary.diemTB10.toStringAsFixed(2)),
+                        _buildScoreBox('Xếp loại', summary.xeploai, color: xeploaiColor),
                       ],
                     ),
                   ],
                 ),
               ),
-              // Table rows
-              Table(
-                columnWidths: const {
-                  0: FixedColumnWidth(50),
-                  1: FixedColumnWidth(180),
-                  2: FixedColumnWidth(90),
-                  3: FixedColumnWidth(90),
-                  4: FixedColumnWidth(90),
-                  5: FixedColumnWidth(120),
-                  6: FixedColumnWidth(120),
-                  7: FixedColumnWidth(120),
-                },
-                children: _summaryGrades.asMap().entries.map((entry) {
-                  int index = entry.key;
-                  SummarySemesterGrade summary = entry.value;
-                  Color bgColor = index % 2 == 0
-                      ? Colors.white
-                      : Colors.grey[50]!;
-
-                  // Màu cho xếp loại
-                  Color xeploaiColor = Colors.black87;
-                  if (summary.xeploai == 'Xuất sắc') {
-                    xeploaiColor = Colors.green;
-                  } else if (summary.xeploai == 'Giỏi') {
-                    xeploaiColor = Colors.blue;
-                  } else if (summary.xeploai == 'Khá') {
-                    xeploaiColor = Colors.orange;
-                  }
-
-                  return TableRow(
-                    decoration: BoxDecoration(color: bgColor),
-                    children: [
-                      _buildGradeTableCell('${index + 1}'),
-                      _buildGradeTableCell(
-                        summary.semesterName,
-                        align: TextAlign.left,
+              const SizedBox(height: 10),
+              // Điểm tích lũy
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Điểm tích lũy',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
                       ),
-                      // Điểm trung bình hệ 4
-                      _buildGradeTableCell(summary.diemTB4.toStringAsFixed(2)),
-
-                      // Điểm trung bình hệ 10
-                      _buildGradeTableCell(summary.diemTB10.toStringAsFixed(2)),
-
-                      _buildGradeTableCell(
-                        summary.xeploai,
-                        color: xeploaiColor,
-                        bold: true,
-                      ),
-
-                      // Điểm tích lũy hệ 4
-                      _buildGradeTableCell(summary.diemTL4.toStringAsFixed(2)),
-
-                      // Điểm tích lũy hệ 10
-                      _buildGradeTableCell(summary.diemTL10.toStringAsFixed(2)),
-
-                      // Số tín chỉ (thường là số nguyên hoặc .5 nên có thể giữ nguyên hoặc format tùy ý)
-                      _buildGradeTableCell(summary.soTCTL.toString()),
-                    ],
-                  );
-                }).toList(),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildScoreBox('Hệ 4', summary.diemTL4.toStringAsFixed(2)),
+                        _buildScoreBox('Hệ 10', summary.diemTL10.toStringAsFixed(2)),
+                        _buildScoreBox('TCTL', summary.soTCTL.toString()),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildScoreBox(String label, String value, {Color? color}) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey[600],
+          ),
         ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color ?? const Color(0xFF213C73),
+          ),
+        ),
+      ],
+    );
+  }
+  Widget _buildWarningsSection() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: _warnings.asMap().entries.map((entry) {
+          int index = entry.key;
+          Warning warning = entry.value;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.red[200]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.red.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red[700],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '#${index + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${warning.namHocText} - ${warning.hocKyText}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red[700],
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.warning, color: Colors.red[700], size: 20),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Thông tin
+                _buildWarningInfo('Số quyết định', warning.quyetdinh),
+                const SizedBox(height: 6),
+                _buildWarningInfo('Ngày quyết định', warning.ngayFormatted),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.red[700], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Lý do',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              warning.lydo,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildSuspendsSection() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: _suspends.asMap().entries.map((entry) {
+          int index = entry.key;
+          Suspend suspend = entry.value;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange[200]!),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[700],
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '#${index + 1}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        suspend.trangthai,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange[800],
+                        ),
+                      ),
+                    ),
+                    // Icon(Icons.pause_circle, color: Colors.orange[700], size: 20),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Thông tin quyết định
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Quyết định',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      _buildSuspendInfo('Năm học', suspend.namHocQdText),
+                      const SizedBox(height: 4),
+                      _buildSuspendInfo('Học kỳ', suspend.hocKyQdText),
+                      const SizedBox(height: 4),
+                      _buildSuspendInfo('Số QĐ', suspend.quyetdinh),
+                      const SizedBox(height: 4),
+                      _buildSuspendInfo('Ngày QĐ', suspend.ngayQdFormatted),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Thời gian tạm dừng
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.orange[50],
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.play_arrow, color: Colors.orange[700], size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Bắt đầu',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              suspend.namHocBdText,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              suspend.hocKyBdText,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.assignment_return, color: Colors.green[700], size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Trở lại',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              suspend.namHocTlText,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              suspend.hocKyTlText,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Lý do
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.grey[700], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Lý do',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              suspend.lydo,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildSuspendInfo(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 70,
+            child: Text(
+              '$label:',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWarningInfo(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              '$label:',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildGradeInfo(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildGradeTableHeader(String text) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(6),
       child: Text(
         text,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: 9,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -751,15 +1398,17 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     bool bold = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Text(
         text,
         textAlign: align,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 9,
           color: color ?? Colors.black87,
           fontWeight: bold ? FontWeight.bold : FontWeight.normal,
         ),
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

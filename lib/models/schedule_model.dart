@@ -65,7 +65,7 @@ class Schedule {
 
   // Chuyển đổi tiết thành buổi
   String get timeSession {
-    if (tiet.isEmpty || tiet == '_') return '';
+    if (tiet.isEmpty || tiet == '_' || tiet == '->') return '';
     
     // Parse tiết (format: "1->3" hoặc "8->9")
     final parts = tiet.split('->');
@@ -79,14 +79,14 @@ class Schedule {
     // Sáng: Tiết 1-5 (07h30 - 11h30)
     // Chiều: Tiết 6-10 (13h00 - 17h00)
     if (firstPeriod >= 1 && firstPeriod <= 5) {
-      final times = ['07h30', '08h30', '09h30', '10h30', '11h30'];
+      final times = ['07h30', '08h30', '09h30', '10h30', '11h30', '12h30'];
       if (secondPeriod <= 5 && secondPeriod >= 1) {
-        return 'Từ ${times[firstPeriod - 1]} -> ${times[secondPeriod - 1]}';
+        return 'Từ ${times[firstPeriod - 1]} -> ${times[secondPeriod]}';
       }
     } else if (firstPeriod >= 6 && firstPeriod <= 10) {
-      final times = ['13h', '14h', '15h', '16h', '17h'];
+      final times = ['13h', '14h', '15h', '16h', '17h', '18h'];
       if (secondPeriod >= 6 && secondPeriod <= 10) {
-        return 'Từ ${times[firstPeriod - 6]} -> ${times[secondPeriod - 6]}';
+        return 'Từ ${times[firstPeriod - 6]} -> ${times[secondPeriod - 5]}';
       }
     }
     

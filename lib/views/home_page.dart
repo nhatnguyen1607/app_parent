@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../models/student_model.dart';
+import '../models/news_model.dart';
 import 'student_detail_page.dart';
+import 'news_detail_page.dart';
 
 import '../repositories/student_repository.dart';
+import '../controllers/news_controller.dart';
 
 class HomePage extends StatefulWidget {
   final User user;
@@ -24,6 +27,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Mock data - sau này sẽ lấy từ API
   late List<Student> students;
+  List<News> _newsList = [];
+  Map<String, List<News>> _groupedNews = {};
+  Map<String, bool> _expandedCategories = {};
+  bool _isLoadingNews = true;
+  final NewsController _newsController = NewsController();
 
   @override
   void initState() {
@@ -39,6 +47,30 @@ class _HomePageState extends State<HomePage> {
             students = list;
           });
         }
+      });
+    }
+    _loadNews();
+  }
+
+  Future<void> _loadNews() async {
+    setState(() {
+      _isLoadingNews = true;
+    });
+
+    try {
+      final news = await _newsController.getNews();
+      final grouped = _newsController.groupNewsByCategory(news);
+
+      setState(() {
+        _newsList = news;
+        _groupedNews = grouped;
+        _isLoadingNews = false;
+        // Initialize all categories as collapsed
+        _expandedCategories = {for (var key in grouped.keys) key: false};
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingNews = false;
       });
     }
   }
@@ -241,13 +273,14 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // Danh sách sinh viên
+            // Danh sách sinh viên và Tin tức
             Expanded(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header Danh sách sinh viên
                     Row(
                       children: [
                         Container(
@@ -289,14 +322,75 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: students.length,
-                        itemBuilder: (context, index) {
-                          return _buildStudentCard(students[index]);
-                        },
-                      ),
+                    // Danh sách sinh viên
+                    ...students.map((student) => _buildStudentCard(student)).toList(),
+
+                    const SizedBox(height: 30),
+
+                    // Header Tin tức
+                    Row(
+                      children: [
+                        Container(
+                          width: 4,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFBB2033),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Tin tức',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF213C73),
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 20),
+
+                    // Tin tức sections
+                    if (_isLoadingNews)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(40),
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFBB2033),
+                          ),
+                        ),
+                      )
+                    else if (_groupedNews.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(40),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.newspaper,
+                                size: 60,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Chưa có thông báo',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ..._groupedNews.entries.map((entry) {
+                        return _buildNewsCategory(
+                          entry.key,
+                          entry.value,
+                        );
+                      }).toList(),
                   ],
                 ),
               ),
@@ -433,6 +527,204 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNewsCategory(String categoryName, List<News> newsList) {
+    final isExpanded = _expandedCategories[categoryName] ?? false;
+    final displayList = isExpanded ? newsList : newsList.take(5).toList();
+    final hasMore = newsList.length > 5;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [const Color(0xFFBB2033), const Color(0xFF213C73)],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.campaign, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    categoryName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${newsList.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // News list
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayList.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: Colors.grey[200],
+            ),
+            itemBuilder: (context, index) {
+              final news = displayList[index];
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NewsDetailPage(news: news),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        margin: const EdgeInsets.only(top: 6),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFBB2033),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              news.title,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF213C73),
+                                height: 1.4,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  size: 14,
+                                  color: Colors.grey[500],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  news.dateFormatted,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        color: Colors.grey[400],
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // See more button
+          if (hasMore)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _expandedCategories[categoryName] = !isExpanded;
+                });
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isExpanded ? 'Thu gọn' : 'Xem thêm',
+                      style: const TextStyle(
+                        color: Color(0xFFBB2033),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: const Color(0xFFBB2033),
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -92,78 +92,145 @@ class _TuitionPaidPageState extends State<TuitionPaidPage> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  // Hiển thị dạng card
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[300]!),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Column(
-                          children: [
-                            DataTable(
-                              headingRowColor: WidgetStateProperty.all(
-                                tableHeaderColor,
+                    child: Column(
+                      children: [
+                      ...tuitionPaid.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        final r = entry.value;
+                        
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[300]!),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
-                              headingTextStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              columns: const [
-                                DataColumn(label: Text('STT')),
-                                DataColumn(label: Text('Số biên lai')),
-                                DataColumn(label: Text('Số tiền (VNĐ)')),
-                                DataColumn(label: Text('Ngày thu')),
-                                DataColumn(label: Text('Học kỳ năm')),
-                              ],
-                              rows: [
-                                ...List<DataRow>.generate(tuitionPaid.length, (
-                                  index,
-                                ) {
-                                  final r = tuitionPaid[index];
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(Text('${index + 1}')),
-                                      DataCell(Text(r.sobienlai)),
-                                      DataCell(
-                                        Text(formatCurrency(r.tongtien)),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Header
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF455A64),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '#${index + 1}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      DataCell(Text(r.ngaythuDisplay)),
-                                      DataCell(Text(r.hocKyNamText)),
-                                    ],
-                                  );
-                                }),
-                                if (totalPaid > 0)
-                                  DataRow(
-                                    cells: [
-                                      const DataCell(
-                                        Text(
-                                          'Tổng',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Biên lai: ${r.sobienlai}',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF213C73),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              // Thông tin
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: _buildInfoRow('Ngày thu', r.ngaythuDisplay),
+                                  ),
+                                  Expanded(
+                                    child: _buildInfoRow('Học kỳ', r.hocKyNamText),
+                                  ),
+                                ],
+                              ),
+                              const Divider(height: 20),
+                              // Số tiền
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'Số tiền',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey[600],
                                         ),
                                       ),
-                                      const DataCell(Text('')),
-                                      DataCell(
-                                        Text(
-                                          formatCurrency(totalPaid),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${formatCurrency(r.tongtien)} VNĐ',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF213C73),
                                         ),
                                       ),
-                                      const DataCell(Text('')),
-                                      const DataCell(Text('')),
                                     ],
                                   ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      // Tổng
+                      if (totalPaid > 0)
+                        Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF213C73),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Tổng cộng:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                '${formatCurrency(totalPaid)} VNĐ',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -176,6 +243,33 @@ class _TuitionPaidPageState extends State<TuitionPaidPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ],
       ),
     );
   }

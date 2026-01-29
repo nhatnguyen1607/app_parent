@@ -94,13 +94,16 @@ class SemesterGrades {
   });
 
   String get semesterName {
+    // Xác định tên học kỳ
+    String hocKyText = hocky == 3 ? 'Học kỳ hè' : 'Học kỳ $hocky';
+    
     // Nếu có tên từ API thì dùng, nếu không thì dùng cách cũ
     if (semesterYearName != null && semesterYearName!.isNotEmpty) {
-      return 'Học kỳ $hocky - $semesterYearName';
+      return '$hocKyText - $semesterYearName';
     }
     // Chuyển đổi namhoc thành năm học (ví dụ: 7 -> 2023-2024)
     int startYear = 2017 + namhoc;
-    return 'Học kỳ $hocky - $startYear-${startYear + 1}';
+    return '$hocKyText - $startYear-${startYear + 1}';
   }
 }
 
@@ -158,10 +161,13 @@ class SummarySemesterGrade {
   }
 
   String get semesterName {
+    // Xác định tên học kỳ
+    String hocKyText = hocky == 3 ? 'Học kỳ hè' : 'Học kỳ $hocky';
+    
     if (semesterYearName != null && semesterYearName!.isNotEmpty) {
-      return 'Học kỳ $hocky, năm $semesterYearName';
+      return '$hocKyText, năm $semesterYearName';
     }
     int startYear = 2017 + namhoc;
-    return 'Học kỳ $hocky, năm $startYear-${startYear + 1}';
+    return '$hocKyText, năm $startYear-${startYear + 1}';
   }
 }

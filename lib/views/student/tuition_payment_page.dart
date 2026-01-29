@@ -127,79 +127,147 @@ class _TuitionPaymentPageState extends State<TuitionPaymentPage> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 12),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  // Hiển thị dạng card
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[300]!),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          headingRowColor: WidgetStateProperty.all(
-                            tableHeaderColor,
-                          ),
-                          headingTextStyle: const TextStyle(
+                    child: Column(
+                      children: [
+                      ...upcomingData.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        final item = entry.value;
+                        
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[300]!),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          columns: const [
-                            DataColumn(label: Text('STT')),
-                            DataColumn(label: Text('Tên lớp')),
-                            DataColumn(label: Text('Số TC')),
-                            DataColumn(label: Text('Lần học')),
-                            DataColumn(label: Text('Thành tiền')),
-                          ],
-                          rows: [
-                            ...List<DataRow>.generate(upcomingData.length, (
-                              index,
-                            ) {
-                              final item = upcomingData[index];
-                              return DataRow(
-                                cells: [
-                                  DataCell(Text('${index + 1}')),
-                                  DataCell(
-                                    SizedBox(
-                                      width: 300,
-                                      child: Text(item.tenLop),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Header
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF455A64),
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
-                                  ),
-                                  DataCell(Text('${item.soTC}')),
-                                  DataCell(Text(item.lanHoc)),
-                                  DataCell(
-                                    Text(formatCurrency(item.thanhTien)),
-                                  ),
-                                ],
-                              );
-                            }),
-                            if (totalAmount > 0)
-                              DataRow(
-                                cells: [
-                                  const DataCell(
-                                    Text(
-                                      'Tổng',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const DataCell(Text('')),
-                                  const DataCell(Text('')),
-                                  const DataCell(Text('')),
-                                  DataCell(
-                                    Text(
-                                      formatCurrency(totalAmount),
+                                    child: Text(
+                                      '#${index + 1}',
                                       style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      item.tenLop,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF213C73),
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
-                          ],
+                              const SizedBox(height: 12),
+                              // Thông tin
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: _buildInfoRow('Số tín chỉ', '${item.soTC}'),
+                                  ),
+                                  Expanded(
+                                    child: _buildInfoRow('Lần học', item.lanHoc),
+                                  ),
+                                ],
+                              ),
+                              const Divider(height: 20),
+                              // Số tiền
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Text(
+                                        'Thành tiền',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${formatCurrency(item.thanhTien)} VNĐ',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF213C73),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      // Tổng
+                      if (totalAmount > 0)
+                        Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF213C73),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Tổng cộng:',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                '${formatCurrency(totalAmount)} VNĐ',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
@@ -309,6 +377,33 @@ class _TuitionPaymentPageState extends State<TuitionPaymentPage> {
           size: 64,
           color: Colors.grey[400],
         ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ],
       ),
     );
   }

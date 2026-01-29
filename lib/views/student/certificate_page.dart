@@ -54,75 +54,138 @@ class _CertificatePageState extends State<CertificatePage> {
 
           return Padding(
             padding: const EdgeInsets.all(20),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    'Chứng chỉ Tốt nghiệp',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 12),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Column(
-                          children: [
-                            DataTable(
-                              headingRowColor: WidgetStateProperty.all(
-                                tableHeaderColor,
-                              ),
-                              headingTextStyle: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              columns: const [
-                                DataColumn(label: Text('Sinh viên')),
-                                DataColumn(
-                                  label: Text('Chứng chỉ Giáo dục thể chất'),
-                                ),
-                                DataColumn(
-                                  label: Text('Chứng chỉ Giáo dục Quốc phòng'),
-                                ),
-                                DataColumn(label: Text('Chứng chỉ Ngoại ngữ')),
-                                DataColumn(label: Text('Chứng chỉ Tin học')),
-                              ],
-                              rows: [
-                                DataRow(
-                                  cells: [
-                                    DataCell(Text(certificate.studentName)),
-                                    DataCell(
-                                      Text(certificate.physicalEducation ?? ''),
-                                    ),
-                                    DataCell(
-                                      Text(certificate.nationalDefense ?? ''),
-                                    ),
-                                    DataCell(
-                                      Text(certificate.foreignLanguage ?? ''),
-                                    ),
-                                    DataCell(
-                                      Text(certificate.informatics ?? ''),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Chứng chỉ Tốt nghiệp',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                // Card hiển thị chứng chỉ
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header - Tên sinh viên
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.person,
+                            color: Color(0xFF213C73),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              certificate.studentName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF213C73),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 24),
+                      // Các chứng chỉ
+                      _buildCertificateRow(
+                        'Chứng chỉ Giáo dục thể chất',
+                        certificate.physicalEducation ?? 'Chưa có',
+                        Icons.fitness_center,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildCertificateRow(
+                        'Chứng chỉ Giáo dục quốc phòng',
+                        certificate.nationalDefense ?? 'Chưa có',
+                        Icons.security,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildCertificateRow(
+                        'Chứng chỉ Ngoại ngữ',
+                        certificate.foreignLanguage ?? 'Chưa có',
+                        Icons.language,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildCertificateRow(
+                        'Chứng chỉ Tin học',
+                        certificate.informatics ?? 'Chưa có',
+                        Icons.computer,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCertificateRow(String label, String value, IconData icon) {
+    final bool hasValue = value != 'Chưa có';
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: hasValue ? const Color(0xFFE8F5E9) : Colors.grey[50],
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: hasValue ? Colors.green[200]! : Colors.grey[300]!,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: hasValue ? Colors.green[700] : Colors.grey[600],
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: hasValue ? Colors.green[800] : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (hasValue)
+            Icon(
+              Icons.check_circle,
+              color: Colors.green[600],
+              size: 20,
+            ),
+        ],
       ),
     );
   }
