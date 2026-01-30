@@ -100,9 +100,14 @@ class NewsDetailPage extends StatelessWidget {
                 data: _unescape.convert(news.content),
                 onLinkTap: (url, _, __) async {
                   if (url != null) {
-                    final uri = Uri.parse(url);
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    try {
+                      final uri = Uri.parse(url);
+                      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                        // Fallback to platformDefault if externalApplication fails
+                        await launchUrl(uri, mode: LaunchMode.platformDefault);
+                      }
+                    } catch (e) {
+                      print('Could not launch $url: $e');
                     }
                   }
                 },

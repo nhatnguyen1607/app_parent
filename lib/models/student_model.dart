@@ -48,7 +48,7 @@ class Student {
           '${json['chucdanh'] ?? ''}${'.'}  ${json['hodemgv'] ?? ''} ${json['tengv'] ?? ''}'
               .trim(),
       email_gv: json['emailgv'] ?? '',
-      phone_gv: json['phonegv'] ?? '',
+      phone_gv: '0${json['phonegv'] ?? ''}'.trim(),
       dateOfBirth: formatDate(json['ngaysinh']), 
       avatarUrl: json['avatar'],
     );
