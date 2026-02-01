@@ -283,15 +283,15 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
         
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 4,
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -303,17 +303,17 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF455A64),
-                      borderRadius: BorderRadius.circular(4),
+                      color: const Color(0xFF2196F3),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       '#${index + 1}',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -335,19 +335,27 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
               const SizedBox(height: 12),
               // Thông tin
               _buildInfoRow('Hình thức thi', exam.examType),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoRow('Ngày thi', exam.examDate),
-                  ),
-                  Expanded(
-                    child: _buildInfoRow('Giờ thi', exam.examTime),
-                  ),
-                ],
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE3F2FD),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoRow('Ngày thi', exam.examDate),
+                    ),
+                    Expanded(
+                      child: _buildInfoRow('Giờ thi', exam.examTime),
+                    ),
+                    Expanded(
+                      child: _buildInfoRow('Phòng thi', exam.examRoom),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 6),
-              _buildInfoRow('Phòng thi', exam.examRoom),
             ],
           ),
         );
@@ -363,15 +371,16 @@ class _ExamSchedulePageState extends State<ExamSchedulePage> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: 11,
             color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),

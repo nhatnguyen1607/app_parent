@@ -108,15 +108,15 @@ class _TuitionPaidPageState extends State<TuitionPaidPage> {
                         
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE0E0E0)),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
-                                blurRadius: 4,
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
@@ -128,17 +128,17 @@ class _TuitionPaidPageState extends State<TuitionPaidPage> {
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF455A64),
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: const Color(0xFF2196F3),
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
                                       '#${index + 1}',
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ),
@@ -186,9 +186,9 @@ class _TuitionPaidPageState extends State<TuitionPaidPage> {
                                       Text(
                                         '${formatCurrency(r.tongtien)} VNĐ',
                                         style: const TextStyle(
-                                          fontSize: 18,
+                                          fontSize: 20,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF213C73),
+                                          color: Color(0xFF1976D2),
                                         ),
                                       ),
                                     ],

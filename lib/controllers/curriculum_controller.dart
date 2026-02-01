@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/curriculum_model.dart';
+import '../config/app_config.dart';
 
 class CurriculumController {
   static int _asInt(dynamic v) {
@@ -9,12 +10,12 @@ class CurriculumController {
     if (v is String) return int.tryParse(v.trim()) ?? 0;
     return 0;
   }
-
+  final String _baseUrl = AppConfig.baseUrl;
   /// Lấy chương trình học từ API chuongtrinh?masv= (danh sách + moreinfo.sotctoithieu)
   Future<CurriculumResult> getCurriculum(String masv) async {
     try {
       final url = Uri.parse(
-        'https://daotao.vku.udn.vn/phuhuynh/api/chuongtrinh?masv=$masv',
+        '$_baseUrl/chuongtrinh?masv=$masv',
       );
 
       final response = await http.get(url);

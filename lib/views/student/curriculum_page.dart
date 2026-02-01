@@ -166,17 +166,17 @@ class _CurriculumPageState extends State<CurriculumPage> {
                                       : _rowEvenBg;
                                   return Container(
                                     margin: const EdgeInsets.only(bottom: 12),
-                                    padding: const EdgeInsets.all(12),
+                                    padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
                                       color: cardBg,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.grey[300]!,
+                                        color: const Color(0xFFE0E0E0),
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(0.03),
-                                          blurRadius: 4,
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 6,
                                           offset: const Offset(0, 2),
                                         ),
                                       ],
@@ -190,20 +190,20 @@ class _CurriculumPageState extends State<CurriculumPage> {
                                             Container(
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                    horizontal: 6,
-                                                    vertical: 2,
+                                                    horizontal: 10,
+                                                    vertical: 4,
                                                   ),
                                               decoration: BoxDecoration(
-                                                color: _tableHeaderColor,
+                                                color: const Color(0xFF2196F3),
                                                 borderRadius:
-                                                    BorderRadius.circular(4),
+                                                    BorderRadius.circular(6),
                                               ),
                                               child: Text(
                                                 '#${index + 1}',
                                                 style: const TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
                                               ),
                                             ),
@@ -223,34 +223,45 @@ class _CurriculumPageState extends State<CurriculumPage> {
                                           ],
                                         ),
                                         const SizedBox(height: 12),
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: isOddHocky
+                                                ? const Color(0xFFFFF8E1)
+                                                : const Color(0xFFE8F5E9),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: _buildInfoRowHighlight(
+                                                  'Số TC',
+                                                  '${item.soTC}',
+                                                  isOddHocky,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: _buildInfoRowHighlight(
+                                                  'Học kỳ dự kiến học',
+                                                  '${item.hocky}',
+                                                  isOddHocky,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
                                         Row(
                                           children: [
                                             Expanded(
                                               child: _buildInfoRow(
-                                                'Số TC',
-                                                '${item.soTC}',
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: _buildInfoRow(
-                                                'Tự chọn',
+                                                'Tự chọn/ Bắt buộc',
                                                 item.loaiHocPhan,
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Row(
-                                          children: [
                                             Expanded(
                                               child: _buildInfoRow(
-                                                'Học kỳ dự kiến học',
-                                                '${item.hocky}',
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: _buildInfoRow(
-                                                'Khối lượng kiến thức',
+                                                'Khối kiến thức',
                                                 item.tenkhoiluongkienthuc,
                                               ),
                                             ),
@@ -281,18 +292,51 @@ class _CurriculumPageState extends State<CurriculumPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
-          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoRowHighlight(String label, String value, bool isOddHocky) {
+    final color = isOddHocky ? Colors.orange : Colors.green;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: color[700],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color[900],
+          ),
+        ),
+      ],
     );
   }
 }
