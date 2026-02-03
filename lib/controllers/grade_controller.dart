@@ -72,7 +72,6 @@ class GradeController {
               groupedGrades[key] = [];
               // Lưu ID tương ứng với namhoc (sử dụng ID từ grade đầu tiên)
               // Cần tìm cách map namhoc_key từ API với namhoc trong grade
-              // Tạm thời sử dụng logic: namhoc_key = namhoc
               semesterIds[key] = grade.namhoc;
             }
             groupedGrades[key]!.add(grade);

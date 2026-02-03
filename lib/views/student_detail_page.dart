@@ -548,22 +548,41 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
   }
 
   Widget _buildSemesterGrades() {
-    return Column(
-      children: _semesterGrades.asMap().entries.map((entry) {
-        int index = entry.key;
-        SemesterGrades semesterGrade = entry.value;
+    // Separate special semester (namhoc=0, hocky=0) from regular semesters
+    SemesterGrades? specialSemester;
+    List<SemesterGrades> regularSemesters = [];
 
-        return Column(
-          children: [
-            if (index > 0) const SizedBox(height: 24),
-            _buildSemesterSection(semesterGrade),
-          ],
-        );
-      }).toList(),
+    for (var semester in _semesterGrades) {
+      // Check if this is the special semester by checking namhoc=0
+      if (semester.namhoc == 0) {
+        specialSemester = semester;
+      } else {
+        regularSemesters.add(semester);
+      }
+    }
+
+    return Column(
+      children: [
+        // Always show special semester section
+        _buildSpecialSemesterSection(specialSemester),
+        const SizedBox(height: 24),
+        // Show regular semesters
+        ...regularSemesters.asMap().entries.map((entry) {
+          int index = entry.key;
+          SemesterGrades semesterGrade = entry.value;
+
+          return Column(
+            children: [
+              if (index > 0) const SizedBox(height: 24),
+              _buildSemesterSection(semesterGrade, isSpecial: false),
+            ],
+          );
+        }).toList(),
+      ],
     );
   }
 
-  Widget _buildSemesterSection(SemesterGrades semesterGrade) {
+  Widget _buildSpecialSemesterSection(SemesterGrades? semesterGrade) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -578,7 +597,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       ),
       child: Column(
         children: [
-          // Header màu xanh lá
+          // Header màu xanh lá for special semester
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -599,11 +618,217 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
               ),
             ),
           ),
-          // Semester title
+          // Grade cards or empty message
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: semesterGrade == null || semesterGrade.grades.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                    child: Center(
+                      child: Text(
+                        'Không có dữ liệu',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  )
+                : Column(
+              children: semesterGrade.grades.asMap().entries.map((entry) {
+                int index = entry.key;
+                Grade grade = entry.value;
+
+                // Màu cho điểm chữ
+                Color gradeColor = Colors.black87;
+                if (grade.diemchu == 'A') {
+                  gradeColor = Colors.green;
+                } else if (grade.diemchu == 'B') {
+                  gradeColor = Colors.blue;
+                } else if (grade.diemchu == 'C') {
+                  gradeColor = Colors.orange;
+                } else if (grade.diemchu == 'D') {
+                  gradeColor = Colors.red[700]!;
+                } else if (grade.diemchu == 'F') {
+                  gradeColor = Colors.red;
+                } else if (grade.diemchu == 'R') {
+                  gradeColor = Colors.grey;
+                }
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Tên môn học
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF455A64),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '#${index + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              grade.tenhocphan,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF213C73),
+                              ),
+                            ),
+                          ),
+                          if (grade.diemchu.isNotEmpty && grade.diemchu != 'R')
+                            Icon(Icons.check_circle, color: gradeColor, size: 18),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      // Thông tin điểm
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradeInfo('Tín chỉ', grade.sotc.toString()),
+                          ),
+                          Expanded(
+                            child: _buildGradeInfo('Lần học', grade.lanhoc),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradeInfo('Điểm CC', grade.diemCC),
+                          ),
+                          Expanded(
+                            child: _buildGradeInfo('Điểm BT', grade.diemBT),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildGradeInfo('Điểm GK', grade.diemGK),
+                          ),
+                          Expanded(
+                            child: _buildGradeInfo('Điểm CK', grade.diemCK),
+                          ),
+                        ],
+                      ),
+                      const Divider(height: 20),
+                      // Điểm tổng kết
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Column(
+                            children: [
+                              Text(
+                                'Điểm T10',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                grade.diemt10?.toString() ?? '',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF213C73),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            height: 40,
+                            width: 1,
+                            color: Colors.grey[300],
+                          ),
+                          Column(
+                            children: [
+                              Text(
+                                'Điểm chữ',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                grade.diemchu,
+                                style: TextStyle(
+                                      fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: gradeColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSemesterSection(SemesterGrades semesterGrade, {bool isSpecial = false}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Semester title only (no "Học kỳ riêng - Quy đổi" header for regular semesters)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: const BoxDecoration(color: Color(0xFFC8E6C9)),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFC8E6C9),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
             child: Text(
               semesterGrade.semesterName,
               textAlign: TextAlign.center,
