@@ -13,6 +13,7 @@ import 'student/curriculum_page.dart';
 import 'student/tuition_paid_page.dart';
 import 'student/tuition_payment_page.dart';
 import 'student/certificate_page.dart';
+import 'student/dormitory_info_page.dart';
 
 class StudentDetailPage extends StatefulWidget {
   final Student student;
@@ -219,7 +220,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green[700],
+                                size: 24,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -264,7 +269,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green[700],
+                                size: 24,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -432,6 +441,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             _buildDrawerItem(Icons.payment, 'Học phí đã nộp', 5),
             _buildDrawerItem(Icons.money, 'Đóng học phí', 6),
             _buildDrawerItem(Icons.verified, 'Chứng chỉ tốt nghiệp', 7),
+            _buildDrawerItem(Icons.apartment, 'Ký túc xá', 8),
             const Divider(color: Colors.white24),
             ListTile(
               leading: const Icon(Icons.arrow_back, color: Colors.white),
@@ -482,6 +492,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             break;
           case 7: // Chứng chỉ tốt nghiệp
             page = CertificatePage(student: widget.student);
+            break;
+          case 8: // Ký túc xá
+            page = DormitoryInfoPage(student: widget.student);
             break;
         }
 
@@ -623,187 +636,216 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             padding: const EdgeInsets.all(8),
             child: semesterGrade == null || semesterGrade.grades.isEmpty
                 ? Container(
-                    padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 32,
+                      horizontal: 16,
+                    ),
                     child: Center(
                       child: Text(
                         'Không có dữ liệu',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ),
                   )
                 : Column(
-              children: semesterGrade.grades.asMap().entries.map((entry) {
-                int index = entry.key;
-                Grade grade = entry.value;
+                    children: semesterGrade.grades.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      Grade grade = entry.value;
 
-                // Màu cho điểm chữ
-                Color gradeColor = Colors.black87;
-                if (grade.diemchu == 'A') {
-                  gradeColor = Colors.green;
-                } else if (grade.diemchu == 'B') {
-                  gradeColor = Colors.blue;
-                } else if (grade.diemchu == 'C') {
-                  gradeColor = Colors.orange;
-                } else if (grade.diemchu == 'D') {
-                  gradeColor = Colors.red[700]!;
-                } else if (grade.diemchu == 'F') {
-                  gradeColor = Colors.red;
-                } else if (grade.diemchu == 'R') {
-                  gradeColor = Colors.grey;
-                }
+                      // Màu cho điểm chữ
+                      Color gradeColor = Colors.black87;
+                      if (grade.diemchu == 'A') {
+                        gradeColor = Colors.green;
+                      } else if (grade.diemchu == 'B') {
+                        gradeColor = Colors.blue;
+                      } else if (grade.diemchu == 'C') {
+                        gradeColor = Colors.orange;
+                      } else if (grade.diemchu == 'D') {
+                        gradeColor = Colors.red[700]!;
+                      } else if (grade.diemchu == 'F') {
+                        gradeColor = Colors.red;
+                      } else if (grade.diemchu == 'R') {
+                        gradeColor = Colors.grey;
+                      }
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[300]!),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Tên môn học
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF455A64),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '#${index + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    grade.tenhocphan,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF213C73),
+                                    ),
+                                  ),
+                                ),
+                                if (grade.diemchu.isNotEmpty &&
+                                    grade.diemchu != 'R')
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: gradeColor,
+                                    size: 18,
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // Thông tin điểm
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildGradeInfo(
+                                    'Tín chỉ',
+                                    grade.sotc.toString(),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _buildGradeInfo(
+                                    'Lần học',
+                                    grade.lanhoc,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildGradeInfo(
+                                    'Điểm CC',
+                                    grade.diemCC,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _buildGradeInfo(
+                                    'Điểm BT',
+                                    grade.diemBT,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildGradeInfo(
+                                    'Điểm GK',
+                                    grade.diemGK,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _buildGradeInfo(
+                                    'Điểm CK',
+                                    grade.diemCK,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 20),
+                            // Điểm tổng kết
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Column(
+                                  children: [
+                                    Text(
+                                      'Điểm T10',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      grade.diemt10?.toString() ?? '',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF213C73),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  height: 40,
+                                  width: 1,
+                                  color: Colors.grey[300],
+                                ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      'Điểm chữ',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      grade.diemchu,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: gradeColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Tên môn học
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF455A64),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              '#${index + 1}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              grade.tenhocphan,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF213C73),
-                              ),
-                            ),
-                          ),
-                          if (grade.diemchu.isNotEmpty && grade.diemchu != 'R')
-                            Icon(Icons.check_circle, color: gradeColor, size: 18),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      // Thông tin điểm
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildGradeInfo('Tín chỉ', grade.sotc.toString()),
-                          ),
-                          Expanded(
-                            child: _buildGradeInfo('Lần học', grade.lanhoc),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildGradeInfo('Điểm CC', grade.diemCC),
-                          ),
-                          Expanded(
-                            child: _buildGradeInfo('Điểm BT', grade.diemBT),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildGradeInfo('Điểm GK', grade.diemGK),
-                          ),
-                          Expanded(
-                            child: _buildGradeInfo('Điểm CK', grade.diemCK),
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20),
-                      // Điểm tổng kết
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Column(
-                            children: [
-                              Text(
-                                'Điểm T10',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                grade.diemt10?.toString() ?? '',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF213C73),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            height: 40,
-                            width: 1,
-                            color: Colors.grey[300],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                'Điểm chữ',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                grade.diemchu,
-                                style: TextStyle(
-                                      fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: gradeColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSemesterSection(SemesterGrades semesterGrade, {bool isSpecial = false}) {
+  Widget _buildSemesterSection(
+    SemesterGrades semesterGrade, {
+    bool isSpecial = false,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -883,7 +925,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF455A64),
                               borderRadius: BorderRadius.circular(4),
@@ -909,7 +954,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                             ),
                           ),
                           if (grade.diemt10 != null && grade.diemt10! > 0)
-                            const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 18,
+                            ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -917,7 +966,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildGradeInfo('Tín chỉ', grade.sotc.toString()),
+                            child: _buildGradeInfo(
+                              'Tín chỉ',
+                              grade.sotc.toString(),
+                            ),
                           ),
                           Expanded(
                             child: _buildGradeInfo('Lần học', grade.lanhoc),
@@ -1047,7 +1099,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF455A64),
                       borderRadius: BorderRadius.circular(4),
@@ -1097,9 +1152,19 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildScoreBox('Hệ 4', summary.diemTB4.toStringAsFixed(2)),
-                        _buildScoreBox('Hệ 10', summary.diemTB10.toStringAsFixed(2)),
-                        _buildScoreBox('Xếp loại', summary.xeploai, color: xeploaiColor),
+                        _buildScoreBox(
+                          'Hệ 4',
+                          summary.diemTB4.toStringAsFixed(2),
+                        ),
+                        _buildScoreBox(
+                          'Hệ 10',
+                          summary.diemTB10.toStringAsFixed(2),
+                        ),
+                        _buildScoreBox(
+                          'Xếp loại',
+                          summary.xeploai,
+                          color: xeploaiColor,
+                        ),
                       ],
                     ),
                   ],
@@ -1128,8 +1193,14 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildScoreBox('Hệ 4', summary.diemTL4.toStringAsFixed(2)),
-                        _buildScoreBox('Hệ 10', summary.diemTL10.toStringAsFixed(2)),
+                        _buildScoreBox(
+                          'Hệ 4',
+                          summary.diemTL4.toStringAsFixed(2),
+                        ),
+                        _buildScoreBox(
+                          'Hệ 10',
+                          summary.diemTL10.toStringAsFixed(2),
+                        ),
                         _buildScoreBox('TCTL', summary.soTCTL.toString()),
                       ],
                     ),
@@ -1146,13 +1217,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
   Widget _buildScoreBox(String label, String value, {Color? color}) {
     return Column(
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
         const SizedBox(height: 4),
         Text(
           value,
@@ -1165,6 +1230,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       ],
     );
   }
+
   Widget _buildWarningsSection() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1200,7 +1266,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red[700],
                         borderRadius: BorderRadius.circular(4),
@@ -1242,7 +1311,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.red[700], size: 16),
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.red[700],
+                        size: 16,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(
@@ -1313,7 +1386,10 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange[700],
                         borderRadius: BorderRadius.circular(4),
@@ -1387,7 +1463,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.play_arrow, color: Colors.orange[700], size: 16),
+                                Icon(
+                                  Icons.play_arrow,
+                                  color: Colors.orange[700],
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Bắt đầu',
@@ -1433,7 +1513,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.assignment_return, color: Colors.green[700], size: 16),
+                                Icon(
+                                  Icons.assignment_return,
+                                  color: Colors.green[700],
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Trở lại',
@@ -1479,7 +1563,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_outline, color: Colors.grey[700], size: 16),
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.grey[700],
+                        size: 16,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(
@@ -1524,10 +1612,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             width: 70,
             child: Text(
               '$label:',
-              style: TextStyle(
-                fontSize: 10,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
             ),
           ),
           Expanded(
@@ -1554,10 +1639,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             width: 110,
             child: Text(
               '$label:',
-              style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
             ),
           ),
           Expanded(
@@ -1574,6 +1656,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       ),
     );
   }
+
   Widget _buildGradeInfo(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -1581,10 +1664,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
         children: [
           Text(
             '$label: ',
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
           ),
           Text(
             value,
