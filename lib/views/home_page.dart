@@ -323,7 +323,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(height: 20),
                     // Danh sách sinh viên
-                    ...students.map((student) => _buildStudentCard(student)).toList(),
+                    ...students.map((student) => _buildStudentCard(student)),
 
                     const SizedBox(height: 30),
 
@@ -386,11 +386,8 @@ class _HomePageState extends State<HomePage> {
                       )
                     else
                       ..._groupedNews.entries.map((entry) {
-                        return _buildNewsCategory(
-                          entry.key,
-                          entry.value,
-                        );
-                      }).toList(),
+                        return _buildNewsCategory(entry.key, entry.value);
+                      }),
                   ],
                 ),
               ),
@@ -604,10 +601,8 @@ class _HomePageState extends State<HomePage> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: displayList.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              color: Colors.grey[200],
-            ),
+            separatorBuilder: (context, index) =>
+                Divider(height: 1, color: Colors.grey[200]),
             itemBuilder: (context, index) {
               final news = displayList[index];
               return InkWell(
